@@ -1,33 +1,33 @@
-import { ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Formik, FormikProps } from "formik";
 import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { StyleSheet } from "react-native";
-import {
-  emptySignInSchema,
-  RegisterResponse,
-  SignInSchema,
-  SignInType,
-} from "../model/login/LoginTypes";
 import { usePreferences } from "../context/ThemeProvider";
 import { useMutation } from "@tanstack/react-query";
 import api from "../services/api";
 import { AxiosError, AxiosResponse } from "axios";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { endpoints } from "../services/api/endpoints";
+import { AuthResponse } from "../model/auth/types";
+import {
+  emptyRegisterForm,
+  RegisterSchema,
+  RegisterType,
+} from "../model/auth/RegisterTypes";
 
-const SignInScreen = () => {
+const RegisterScreen = () => {
   const { theme } = usePreferences();
-  const formikRef = useRef<FormikProps<SignInType> | null>(null);
+  const formikRef = useRef<FormikProps<RegisterType> | null>(null);
   const emailInputRef = useRef<any | null>(null);
 
   let { isPending, error, data, mutate } = useMutation<
-    AxiosResponse<RegisterResponse>,
-    AxiosError<RegisterResponse>,
-    SignInType
+    AxiosResponse<AuthResponse>,
+    AxiosError<AuthResponse>,
+    RegisterType
   >({
     mutationKey: ["register"],
-    mutationFn: async (form: SignInType) =>
-      await api.post(endpoints.auth.login, form, {
+    mutationFn: async (form: RegisterType) =>
+      await api.post(endpoints.auth.register, form, {
         headers: { "x-skip-auth": true },
       }),
   });
@@ -48,9 +48,9 @@ const SignInScreen = () => {
   return (
     <Formik
       innerRef={formikRef}
-      initialValues={emptySignInSchema}
-      onSubmit={(values: SignInType) => mutate(values)}
-      validationSchema={SignInSchema}
+      initialValues={emptyRegisterForm}
+      onSubmit={(values: RegisterType) => mutate(values)}
+      validationSchema={RegisterSchema}
     >
       {({
         handleChange,
@@ -59,7 +59,6 @@ const SignInScreen = () => {
         values,
         errors,
         touched,
-        handleReset,
       }) => (
         <SafeAreaView
           style={[
@@ -67,6 +66,37 @@ const SignInScreen = () => {
             { backgroundColor: theme.colors.background },
           ]}
         >
+          <Text
+            theme={theme}
+            style={[styles.label, { color: theme.colors.onBackground }]}
+          >
+            Nome
+          </Text>
+
+          <TextInput
+            onChangeText={handleChange("name")}
+            onBlur={handleBlur("name")}
+            placeholder="Digite o seu nome"
+            value={values.name}
+            mode="outlined"
+            style={[
+              styles.input,
+              errors.name && touched.name
+                ? {
+                    borderColor: theme.colors.error,
+                    borderWidth: 2,
+                  }
+                : undefined,
+            ]}
+            theme={{ colors: { text: theme.colors.onBackground } }}
+          />
+
+          {errors.name && touched.name && (
+            <Text style={[styles.errorText, { color: theme.colors.error }]}>
+              {errors.name}
+            </Text>
+          )}
+
           <Text
             theme={theme}
             style={[styles.label, { color: theme.colors.onBackground }]}
@@ -224,4 +254,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignInScreen;
+export default RegisterScreen;

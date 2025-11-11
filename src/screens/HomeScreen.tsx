@@ -7,9 +7,14 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { theme } = usePreferences();
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      style={[
+        styles.container,
+        { backgroundColor: theme.colors.background, gap: 16 },
+      ]}
     >
-      <Text style={[styles.title]}>Home</Text>
+      <Text theme={theme} style={[styles.title]}>
+        Home
+      </Text>
       <Button
         mode="contained"
         onPress={() => {
@@ -18,6 +23,15 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         style={[styles.button]}
       >
         Abrir tela de registro
+      </Button>
+      <Button
+        mode="contained"
+        onPress={() => {
+          navigation.navigate("Login");
+        }}
+        style={[styles.button]}
+      >
+        Abrir tela de login
       </Button>
     </SafeAreaView>
   );

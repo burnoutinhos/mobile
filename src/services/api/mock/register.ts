@@ -1,22 +1,23 @@
 import AxiosMockAdapter from "axios-mock-adapter";
 import { endpoints } from "../endpoints";
-import { RegisterResponse, SignInType } from "../../../model/login/LoginTypes";
+import { RegisterType } from "../../../model/auth/RegisterTypes";
 import { api } from "../axios-client";
+import { AuthResponse } from "../../../model/auth/types";
 
 const mock = new AxiosMockAdapter(api, { delayResponse: 1000 });
 
 mock.onPost(endpoints.auth.login).reply((config) => {
-  const { email, password, confirmPassword } = JSON.parse(
+  const { email, password, confirmPassword, name } = JSON.parse(
     config.data,
-  ) as SignInType;
+  ) as RegisterType;
 
-  if (!email || !password || !confirmPassword)
+  if (!name || !email || !password || !confirmPassword)
     return [
       400,
       {
         error: true,
         message: "Dados invalidos",
-      } as RegisterResponse,
+      } as AuthResponse,
     ];
 
   if (!(password == confirmPassword))
@@ -25,7 +26,7 @@ mock.onPost(endpoints.auth.login).reply((config) => {
       {
         error: true,
         message: "Senha e confirmar senha devem ser iguais",
-      } as RegisterResponse,
+      } as AuthResponse,
     ];
 
   return [
@@ -36,6 +37,6 @@ mock.onPost(endpoints.auth.login).reply((config) => {
       data: {
         token: "dusane19321yu38nd12923n1",
       },
-    } as RegisterResponse,
+    } as AuthResponse,
   ];
 });

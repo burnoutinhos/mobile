@@ -32,11 +32,4 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-export const endpoints = {
-  auth: {
-    login: "/auth/login",
-    register: "/auth/register",
-  },
-} as const;
-
 export default api;

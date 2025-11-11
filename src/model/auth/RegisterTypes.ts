@@ -1,6 +1,7 @@
 import * as yup from "yup";
 
-const SignInSchema = yup.object().shape({
+const RegisterSchema = yup.object().shape({
+  name: yup.string().required("Nome é obrigatório"),
   email: yup.string().email("Email invalido").required("Email obrigatorio"),
   password: yup
     .string()
@@ -12,20 +13,13 @@ const SignInSchema = yup.object().shape({
     .required("Confirmar senha obrigatoria"),
 });
 
-type SignInType = yup.InferType<typeof SignInSchema>;
+type RegisterType = yup.InferType<typeof RegisterSchema>;
 
-const emptySignInSchema: SignInType = {
+const emptyRegisterForm: RegisterType = {
+  name: "",
   email: "",
   password: "",
   confirmPassword: "",
 };
 
-interface RegisterResponse {
-  error: boolean;
-  message: string;
-  data?: {
-    token: string;
-  };
-}
-
-export { SignInSchema, emptySignInSchema, SignInType, RegisterResponse };
+export { RegisterSchema, emptyRegisterForm, RegisterType };

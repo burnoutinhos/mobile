@@ -4,4 +4,5 @@ const MOCK =
 
 if (MOCK) {
   require("./register");
+  require("./login");
 }
