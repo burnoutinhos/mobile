@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import React, { createElement, useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import {
   Card,
   Text,
@@ -10,6 +10,18 @@ import {
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePreferences } from "../context/ThemeProvider";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { queryKeys } from "../services/api/query-keys";
+import api from "../services/api";
+import { endpoints } from "../services/api/endpoints";
+import { NotificationResponse } from "../model/notification/notification";
+import { queryClient } from "../../App";
+import { ActivityIndicator } from "react-native-paper";
 
 export type NotificationItem = {
   id: string;
@@ -21,56 +33,66 @@ export type NotificationItem = {
 
 const NotificationsScreen = () => {
   const { theme } = usePreferences();
+  const [notificationSelectedId, setNotificationSelectedId] = useState(0);
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: "1",
-      title: "Nova mensagem",
-      message: "Você recebeu uma nova mensagem de João Silva",
-      time: "Agora",
-      read: false,
+  const {
+    data: notifications,
+    isLoading,
+    refetch,
+    isFetching,
+    isFetched,
+  } = useQuery({
+    queryKey: [queryKeys.notification.findAll],
+    queryFn: async () => {
+      const res = await api.get<NotificationResponse[]>(
+        endpoints.notification.findAll,
+      );
+      return res.data.map((not) => ({
+        ...not,
+        created_at:
+          not.created_at instanceof Date
+            ? not.created_at
+            : new Date((not.created_at as unknown as string) || Date.now()),
+      }));
     },
-    {
-      id: "2",
-      title: "Backup concluído",
-      message: "Seu backup foi concluído com sucesso",
-      time: "1h atrás",
-      read: true,
+  });
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  const { mutate: removeNotification } = useMutation({
+    mutationKey: [`${queryKeys.notification.findAll}`],
+    mutationFn: async (id: number) => {
+      await api.delete(`${endpoints.notification.findAll}/${id}`);
+      return id;
     },
-    {
-      id: "3",
-      title: "Atualização disponível",
-      message: "Uma nova versão do aplicativo está disponível",
-      time: "2h atrás",
-      read: false,
+    onSuccess: (id: number) => {
+      const queryClient = useQueryClient();
+      const previous = queryClient.getQueryData([
+        queryKeys.notification.findAll,
+      ]) as NotificationResponse[];
+
+      queryClient.setQueryData(
+        [queryKeys.notification.findAll],
+        previous?.filter((not) => not.id !== id),
+      );
     },
-    {
-      id: "4",
-      title: "Lembrete",
-      message: "Você tem uma reunião às 15:00",
-      time: "3h atrás",
-      read: true,
+  });
+
+  const { mutate: clearAll } = useMutation({
+    mutationKey: [queryKeys.notification.single],
+    mutationFn: async () => await api.delete(endpoints.notification.findAll),
+    onSuccess: () => {
+      const queryClient = useQueryClient();
+      queryClient.removeQueries({
+        queryKey: [queryKeys.notification.findAll],
+      });
     },
-  ]);
+  });
 
-  function toggleRead(id: string) {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)),
-    );
-  }
-
-  function deleteNotification(id: string) {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }
-
-  function markAllAsRead() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }
-
-  function clearAll() {
-    setNotifications([]);
-  }
-
+  if (isLoading || isFetching || !isFetched)
+    return <ActivityIndicator size="large" />;
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -80,23 +102,15 @@ const NotificationsScreen = () => {
           <Button
             mode="text"
             compact
-            onPress={markAllAsRead}
-            disabled={notifications.length === 0}
-          >
-            Marcar todas lidas
-          </Button>
-          <Button
-            mode="text"
-            compact
-            onPress={clearAll}
-            disabled={notifications.length === 0}
+            onPress={() => clearAll()}
+            disabled={notifications && notifications.length === 0}
           >
             Limpar tudo
           </Button>
         </View>
       </View>
 
-      {notifications.length === 0 ? (
+      {notifications && notifications.length === 0 ? (
         <View style={styles.empty}>
           <IconButton
             icon="bell-off-outline"
@@ -113,75 +127,73 @@ const NotificationsScreen = () => {
       ) : (
         <ScrollView
           style={styles.scroll}
-          // refreshControl={}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refetch}
+              colors={[theme.colors.primary]}
+              progressBackgroundColor={theme.colors.background}
+            />
+          }
           contentContainerStyle={styles.scrollContent}
         >
-          {notifications.map((notification) => (
-            <Card
-              key={notification.id}
-              style={[
-                styles.card,
-                {
-                  backgroundColor: theme.colors.inverseOnSurface,
-                  opacity: notification.read ? 0.6 : 1,
-                },
-              ]}
-              mode="elevated"
-            >
-              <Card.Title
-                title={
-                  <View style={styles.titleRow}>
-                    <Text
-                      variant="titleMedium"
-                      style={{
-                        fontWeight: notification.read ? "normal" : "600",
-                        flex: 1,
-                        color: theme.colors.onBackground,
-                      }}
-                    >
-                      {notification.title}
-                    </Text>
-                    {!notification.read && (
-                      <Badge
-                        size={8}
-                        style={{ backgroundColor: theme.colors.primary }}
-                      />
-                    )}
-                  </View>
-                }
-                subtitle={notification.time}
-                subtitleStyle={{
-                  marginTop: 4,
-                  color: theme.colors.onBackground,
-                }}
-                right={(props) => (
-                  <IconButton
-                    {...props}
-                    icon="delete-outline"
-                    size={20}
-                    onPress={() => deleteNotification(notification.id)}
-                  />
-                )}
-              />
-              <Card.Content style={styles.cardContent}>
-                <Text
-                  variant="bodyMedium"
-                  style={{ color: theme.colors.onSurfaceVariant }}
-                >
-                  {notification.message}
-                </Text>
-              </Card.Content>
-              <Card.Actions>
-                <Button
-                  mode="text"
-                  compact
-                  onPress={() => toggleRead(notification.id)}
-                >
-                  {notification.read ? "Marcar não lida" : "Marcar lida"}
-                </Button>
-              </Card.Actions>
-            </Card>
-          ))}
+          {notifications &&
+            notifications.map((notification) => (
+              <Card
+                key={notification.id}
+                style={[
+                  styles.card,
+                  {
+                    backgroundColor: theme.colors.inverseOnSurface,
+                  },
+                ]}
+                mode="elevated"
+              >
+                <Card.Title
+                  title={
+                    <View style={styles.titleRow}>
+                      <Text
+                        variant="titleMedium"
+                        style={{
+                          flex: 1,
+                          color: theme.colors.onBackground,
+                        }}
+                      >
+                        {notification.message}
+                      </Text>
+                      {notification.created_at.getDay() ===
+                        new Date().getDay() && (
+                        <Badge
+                          size={8}
+                          style={{ backgroundColor: theme.colors.primary }}
+                        />
+                      )}
+                    </View>
+                  }
+                  subtitle={notification.created_at.toDateString()}
+                  subtitleStyle={{
+                    marginTop: 4,
+                    color: theme.colors.onBackground,
+                  }}
+                  right={(props) => (
+                    <IconButton
+                      {...props}
+                      icon="delete-outline"
+                      size={20}
+                      onPress={() => removeNotification(notification.id)}
+                    />
+                  )}
+                />
+                <Card.Content style={styles.cardContent}>
+                  <Text
+                    variant="bodyMedium"
+                    style={{ color: theme.colors.onSurfaceVariant }}
+                  >
+                    {notification.message}
+                  </Text>
+                </Card.Content>
+              </Card>
+            ))}
         </ScrollView>
       )}
     </SafeAreaView>

@@ -5,4 +5,5 @@ const MOCK =
 if (MOCK) {
   require("./register");
   require("./login");
+  require("./notification");
 }

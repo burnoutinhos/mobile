@@ -1,0 +1,10 @@
+export const queryKeys = {
+  notification: {
+    findAll: "notifications",
+    single: "notification",
+  },
+  auth: {
+    register: "register",
+    login: "login",
+  },
+};
