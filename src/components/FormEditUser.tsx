@@ -1,38 +1,37 @@
-
-
-import { Formik, FormikProps } from 'formik'
-import React, { useRef, useState } from 'react'
-import { usePreferences } from '../context/ThemeProvider';
-import { UserSchema, UserType } from '../model/user/UserTypes';
-import { IUser } from '../model/user/user';
-import { useMutation } from '@tanstack/react-query';
-import { UserResponse } from '../model/auth/types';
-import { AxiosError, AxiosResponse } from 'axios';
-import { endpoints } from '../services/api/endpoints';
-import api from '../services/api';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
-import { ActivityIndicator, Button, Text, TextInput } from 'react-native-paper';
-import { Dropdown } from 'react-native-paper-dropdown';
+import { Formik, FormikProps } from "formik";
+import React, { useRef, useState } from "react";
+import { usePreferences } from "../context/ThemeProvider";
+import { UserSchema, UserType } from "../model/user/UserTypes";
+import { IUser } from "../model/user/user";
+import { useMutation } from "@tanstack/react-query";
+import { UserResponse } from "../model/auth/types";
+import { AxiosError, AxiosResponse } from "axios";
+import { endpoints } from "../services/api/endpoints";
+import api from "../services/api";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
+import { Dropdown } from "react-native-paper-dropdown";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface FormProps {
-    user: IUser
+  user: IUser;
 }
 
-export default function FormEditUser({user} : FormProps) {
-    const { theme } = usePreferences();
-    const formikRef = useRef<FormikProps<UserType> | null>(null);
-    const emailInputRef = useRef<any | null>(null);
+export default function FormEditUser({ user }: FormProps) {
+  const { theme } = usePreferences();
+  const formikRef = useRef<FormikProps<UserType> | null>(null);
+  const emailInputRef = useRef<any | null>(null);
 
-    const [showDropDown, setShowDropDown] = useState(false);
+  const [showDropDown, setShowDropDown] = useState(false);
 
-    const languageList = [
-        { label: "Português", value: "PTBR" },
-        { label: "English", value: "EN" },
-        { label: "Español", value: "ES" },
-    ];
+  const languageList = [
+    { label: "Português", value: "PTBR" },
+    { label: "English", value: "EN" },
+    { label: "Español", value: "ES" },
+  ];
 
-    let { isPending, error, data, mutate } = useMutation<
+  let { isPending, error, data, mutate } = useMutation<
     AxiosResponse<UserResponse>,
     AxiosError<UserResponse>,
     UserType
@@ -42,14 +41,23 @@ export default function FormEditUser({user} : FormProps) {
       await api.put(endpoints.user.update, form, {
         headers: { "x-skip-auth": true },
       }),
+    onSuccess: async (response) => {
+        // pega o user retornado pela API
+        const updatedUser = response.data.user;
+    
+        // salva no async storage
+        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+
+      },    
   });
   return (
     <Formik
-        innerRef={formikRef}
-        initialValues={user as UserType}
-        onSubmit={(values: UserType) => mutate(values)}
-        validationSchema={UserSchema}>
-            {({
+      innerRef={formikRef}
+      initialValues={user as UserType}
+      onSubmit={(values: UserType) => mutate(values)}
+      validationSchema={UserSchema}
+    >
+      {({
         handleChange,
         handleBlur,
         handleSubmit,
@@ -63,7 +71,6 @@ export default function FormEditUser({user} : FormProps) {
             { backgroundColor: theme.colors.background },
           ]}
         >
-
           <Text
             theme={theme}
             style={[styles.label, { color: theme.colors.onBackground }]}
@@ -190,28 +197,6 @@ export default function FormEditUser({user} : FormProps) {
             </Text>
           )}
 
-          <Text
-            theme={theme}
-            style={[styles.label, { color: theme.colors.onBackground }]}
-          >
-            Idioma
-          </Text>
-
-          <Dropdown
-            label="Selecione o idioma"
-            placeholder="Selecione o idioma"
-            options={languageList}
-            value={values.language}
-            onSelect={(value) => handleChange("language")(value || "")}
-            mode="outlined"
-          />
-
-          {errors.language && touched.language && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.language}
-            </Text>
-          )}
-
           <Button
             mode="contained"
             onPress={() => handleSubmit()}
@@ -219,7 +204,7 @@ export default function FormEditUser({user} : FormProps) {
             labelStyle={[styles.buttonLabel, { color: theme.colors.onPrimary }]}
             contentStyle={styles.buttonContent}
           >
-            Registrar
+            Atualizar Perfil
           </Button>
 
           {isPending && <ActivityIndicator size="large" />}
@@ -240,10 +225,8 @@ export default function FormEditUser({user} : FormProps) {
           )}
         </SafeAreaView>
       )}
-        
-
     </Formik>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

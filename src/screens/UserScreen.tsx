@@ -1,16 +1,27 @@
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePreferences } from "../context/ThemeProvider";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { IUser } from "../model/user/user";
 import { useEffect, useState } from "react";
+import FormEditUser from "../components/FormEditUser";
+import { EnumLanguage } from "../services/Enums";
 
 
 const UserScreen = () => {
     const { theme } = usePreferences();
 
+    const userLocal: IUser = {
+      id: 1,
+      name: "Felipe Ribeiro",
+      email: "felipe@example.com",
+      password: "senha123",
+      language: EnumLanguage.PTBR,
+      profile_image: "https://example.com/profile.png"
+    };
+    
     const [user, setUser] = useState<IUser | undefined>(undefined)
 
     const getUser = async () => {
@@ -27,33 +38,44 @@ const UserScreen = () => {
         getUser()
     },[])
 
-    return(
-        <SafeAreaView
-            style={[
-                styles.container,
-                {backgroundColor: theme.colors.background, gap:16}
-            ]}>
-            <Text theme={theme} style={[styles.title]}>
-                Seu perfil
-            </Text>
+    return (
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+          <ScrollView
+            contentContainerStyle={{ 
+              alignItems: "center",
+              padding: 16,
+              gap: 16,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+    
             <View>
-                {user?.profile_image? 
+              {user?.profile_image ? (
                 <Image
-                    width={150}
-                    height={150}
-                    source={{uri: user?.profile_image}}
-                    style={{borderRadius: 1000}}
-                /> :
-                <View style={{width:150,height:150,borderRadius:1000,backgroundColor: theme.colors.card}}></View>}
+                  width={150}
+                  height={150}
+                  source={{ uri: user?.profile_image }}
+                  style={{ borderRadius: 1000 }}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: 1000,
+                    backgroundColor: theme.colors.card,
+                  }}
+                />
+              )}
             </View>
-            <View>
-            <Text theme={theme}>
-                Seu perfil
-            </Text>
+    
+            <View style={{ width: "100%" }}>
+              <FormEditUser user={userLocal} />
             </View>
+          </ScrollView>
         </SafeAreaView>
-    )
-}
+      );
+    };
 
 const styles = StyleSheet.create({
   container: {
