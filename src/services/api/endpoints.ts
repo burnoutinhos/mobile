@@ -6,4 +6,8 @@ export const endpoints = {
   notification: {
     findAll: "/notification",
   },
+  user: {
+    update: "/user",
+    userInfo: "/me"
+  },
 } as const;

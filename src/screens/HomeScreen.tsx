@@ -33,6 +33,15 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       >
         Abrir tela de login
       </Button>
+      <Button
+        mode="contained"
+        onPress={() => {
+          navigation.navigate("User");
+        }}
+        style={[styles.button]}
+      >
+        Abrir tela de user
+      </Button>
     </SafeAreaView>
   );
 };

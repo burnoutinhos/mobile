@@ -7,4 +7,8 @@ export const queryKeys = {
     register: "register",
     login: "login",
   },
+  user: {
+    user: "user",
+    userUpdate: "userUpdate",
+  },
 };

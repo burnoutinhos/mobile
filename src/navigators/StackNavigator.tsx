@@ -7,12 +7,14 @@ import LoginScreen from "../screens/LoginScreen";
 import { usePreferences } from "../context/ThemeProvider";
 import CustomNavigationBar from "../components/Appbar";
 import NotificationsScreen from "../screens/NotificationsScreen";
+import UserScreen from "../screens/UserScreen";
 
 export type StackParamsList = {
   Home: undefined;
   Notifications: undefined;
   SignIn: undefined;
   Login: undefined;
+  User: undefined;
 };
 
 const Stack = createNativeStackNavigator<StackParamsList>();
@@ -49,6 +51,11 @@ const StackNavigator = () => {
           name="Notifications"
           component={NotificationsScreen}
           options={{ title: "Notificações" }}
+        />
+        <Stack.Screen
+          name="User"
+          component={UserScreen}
+          options={{ title: "User" }}
         />
         <Stack.Screen
           name="SignIn"
