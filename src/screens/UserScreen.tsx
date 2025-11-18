@@ -1,4 +1,3 @@
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePreferences } from "../context/ThemeProvider";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
@@ -8,74 +7,85 @@ import { IUser } from "../model/user/user";
 import { useEffect, useState } from "react";
 import FormEditUser from "../components/FormEditUser";
 import { EnumLanguage } from "../services/Enums";
-
+import { useMutation } from "@tanstack/react-query";
+import { queryKeys } from "../services/api/query-keys";
+import api from "../services/api";
+import { endpoints } from "../services/api/endpoints";
 
 const UserScreen = () => {
-    const { theme } = usePreferences();
+  const { theme } = usePreferences();
 
-    const userLocal: IUser = {
-      id: 1,
-      name: "Felipe Ribeiro",
-      email: "felipe@example.com",
-      password: "senha123",
-      language: EnumLanguage.PTBR,
-      profile_image: "https://example.com/profile.png"
-    };
-    
-    const [user, setUser] = useState<IUser | undefined>(undefined)
+  // const userLocal: IUser = {
+  //   id: 1,
+  //   name: "Felipe Ribeiro",
+  //   email: "felipe@example.com",
+  //   password: "senha123",
+  //   language: EnumLanguage.PTBR,
+  //   profile_image: "https://example.com/profile.png"
+  // };
 
-    const getUser = async () => {
-        const localUser = await AsyncStorage.getItem("user")
-        if (localUser) {
-            setUser(JSON.parse(localUser))
-        }else {
-            // nn sei oque colocar de erro
-            return 
-        }
+  const { mutate } = useMutation({
+    mutationKey: [queryKeys.user.user],
+    mutationFn: async () => {
+      return await api.get(endpoints.user.userInfo);
+    },
+  });
+
+  const [user, setUser] = useState<IUser | undefined>(undefined);
+
+  const getUser = async () => {
+    const localUser = await AsyncStorage.getItem("user");
+    if (localUser) {
+      setUser(JSON.parse(localUser));
+    } else {
+      // nn sei oque colocar de erro
+      return;
     }
+  };
 
-    useEffect(()=>{
-        getUser()
-    },[])
+  useEffect(() => {
+    getUser();
+  }, []);
 
-    return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-          <ScrollView
-            contentContainerStyle={{ 
-              alignItems: "center",
-              padding: 16,
-              gap: 16,
-            }}
-            showsVerticalScrollIndicator={false}
-          >
-    
-            <View>
-              {user?.profile_image ? (
-                <Image
-                  width={150}
-                  height={150}
-                  source={{ uri: user?.profile_image }}
-                  style={{ borderRadius: 1000 }}
-                />
-              ) : (
-                <View
-                  style={{
-                    width: 150,
-                    height: 150,
-                    borderRadius: 1000,
-                    backgroundColor: theme.colors.card,
-                  }}
-                />
-              )}
-            </View>
-    
-            <View style={{ width: "100%" }}>
-              <FormEditUser user={userLocal} />
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      );
-    };
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <ScrollView
+        contentContainerStyle={{
+          alignItems: "center",
+          padding: 16,
+          gap: 16,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View>
+          {user?.profile_image ? (
+            <Image
+              width={150}
+              height={150}
+              source={{ uri: user?.profile_image }}
+              style={{ borderRadius: 1000 }}
+            />
+          ) : (
+            <View
+              style={{
+                width: 150,
+                height: 150,
+                borderRadius: 1000,
+                backgroundColor: theme.colors.card,
+              }}
+            />
+          )}
+        </View>
+
+        <View style={{ width: "100%" }}>
+          <FormEditUser user={userLocal} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -97,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   text: {
-    fontSize:16
+    fontSize: 16,
   },
   button: {
     alignSelf: "stretch",
@@ -105,6 +115,5 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
 });
-
 
 export default UserScreen;

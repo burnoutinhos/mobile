@@ -15,33 +15,6 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       <Text theme={theme} style={[styles.title]}>
         Home
       </Text>
-      <Button
-        mode="contained"
-        onPress={() => {
-          navigation.navigate("SignIn");
-        }}
-        style={[styles.button]}
-      >
-        Abrir tela de registro
-      </Button>
-      <Button
-        mode="contained"
-        onPress={() => {
-          navigation.navigate("Login");
-        }}
-        style={[styles.button]}
-      >
-        Abrir tela de login
-      </Button>
-      <Button
-        mode="contained"
-        onPress={() => {
-          navigation.navigate("User");
-        }}
-        style={[styles.button]}
-      >
-        Abrir tela de user
-      </Button>
     </SafeAreaView>
   );
 };
