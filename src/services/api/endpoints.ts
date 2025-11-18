@@ -8,6 +8,10 @@ export const endpoints = {
   },
   user: {
     update: "/user",
-    userInfo: "/me"
+    userInfo: "/me",
+  },
+  todo: {
+    findAll: "/todos",
+    put: "/todo"
   },
 } as const;

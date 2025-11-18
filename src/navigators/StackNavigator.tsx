@@ -8,6 +8,9 @@ import { usePreferences } from "../context/ThemeProvider";
 import CustomNavigationBar from "../components/Appbar";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import UserScreen from "../screens/UserScreen";
+import TodoScreen from "../screens/TodoScreen";
+import { ITodo } from "../model/todo/todo";
+import TodoPage from "../screens/TodoPage";
 
 export type StackParamsList = {
   Home: undefined;
@@ -15,6 +18,8 @@ export type StackParamsList = {
   SignIn: undefined;
   Login: undefined;
   User: undefined;
+  Todo: undefined;
+  TodoPage: { todo: ITodo };
 };
 
 const Stack = createNativeStackNavigator<StackParamsList>();
@@ -66,6 +71,16 @@ const StackNavigator = () => {
           name="Login"
           component={LoginScreen}
           options={{ title: "Logar" }}
+        />
+        <Stack.Screen
+          name="Todo"
+          component={TodoScreen}
+          options={{ title: "Todo" }}
+        />
+        <Stack.Screen
+          name="TodoPage"
+          component={TodoPage}
+          options={{ title: "Pagina todo" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
