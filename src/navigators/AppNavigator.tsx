@@ -9,11 +9,14 @@ import CustomNavigationBar from "../components/Appbar";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import UserScreen from "../screens/UserScreen";
 import { HomeNavigator } from "./HomeNavigator";
+import { CronometerScreen } from "../screens/Cronometer";
 
 export type AppParamList = {
   Home: undefined;
   Notifications: undefined;
   User: undefined;
+  Cronometer: undefined;
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<AppParamList>();
@@ -42,8 +45,8 @@ const AppNavigator = () => {
     >
       <Stack.Screen
         name="Home"
-        component={HomeNavigator}
-        options={{ title: "Burnoutinhos 🫩" }}
+        component={HomeScreen}
+        options={{ title: "Burnoutinhos" }}
       />
       <Stack.Screen
         name="Notifications"
@@ -51,9 +54,14 @@ const AppNavigator = () => {
         options={{ title: "Notificações" }}
       />
       <Stack.Screen
-        name="User"
+        name="Settings"
         component={UserScreen}
-        options={{ title: "User" }}
+        options={{ title: "Configurações" }}
+      />
+      <Stack.Screen
+        name="Cronometer"
+        component={CronometerScreen}
+        options={{ title: "Cronômetro" }}
       />
     </Stack.Navigator>
   );

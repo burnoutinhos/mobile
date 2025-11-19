@@ -50,6 +50,10 @@ export default function CustomNavigationBar({
     navigation.navigate("Notifications" as any);
   }
 
+  function handlePressSettings() {
+    navigation.navigate("Settings" as any);
+  }
+
   return (
     <Appbar.Header
       style={[styles.header, { backgroundColor: theme.colors.surface }]}
@@ -65,6 +69,11 @@ export default function CustomNavigationBar({
         titleStyle={{ color: theme.colors.primary }}
       />
       <View style={styles.iconWrap}>
+        <Appbar.Action
+          icon="cog-outline"
+          onPress={handlePressSettings}
+          accessibilityLabel="Configurações"
+        />
         <Appbar.Action
           icon="bell"
           onPress={handlePressNotifications}
@@ -113,6 +122,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 4,
+    flexDirection: "row",
   },
   badge: {
     position: "absolute",

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Formik, FormikProps } from "formik";
-import { Button, Text, TextInput, Card, HelperText } from "react-native-paper";
+import { Button, Text, TextInput, Card, HelperText, ActivityIndicator } from "react-native-paper";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -162,11 +162,15 @@ const LoginScreen = () => {
                   contentStyle={styles.buttonContent}
                   labelStyle={styles.buttonLabel}
                   icon="login"
-                  loading={isPending}
-                  disabled={isPending}
+                  loading={isPending && !error}
+                  disabled={isPending && !error}
                 >
                   Entrar
                 </Button>
+
+                {isPending && !error && (
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                )}
 
                 <Button
                   mode="text"
@@ -186,7 +190,7 @@ const LoginScreen = () => {
                   >
                     <Card.Content>
                       <Text style={{ color: theme.colors.onErrorContainer }}>
-                        {error.message}
+                        {error.status === 404 ? "Email ou senha inválidas" : error.message}
                       </Text>
                     </Card.Content>
                   </Card>

@@ -15,21 +15,16 @@ import { endpoints } from "../services/api/endpoints";
 const UserScreen = () => {
   const { theme } = usePreferences();
 
-  // const userLocal: IUser = {
-  //   id: 1,
-  //   name: "Felipe Ribeiro",
-  //   email: "felipe@example.com",
-  //   password: "senha123",
-  //   language: EnumLanguage.PTBR,
-  //   profile_image: "https://example.com/profile.png"
-  // };
-
-  const { mutate } = useMutation({
+  const { mutate, isPending, error, data } = useMutation({
     mutationKey: [queryKeys.user.user],
     mutationFn: async () => {
       return await api.get(endpoints.user.userInfo);
     },
   });
+
+  useEffect(() => {
+    mutate();
+  }, []);
 
   const [user, setUser] = useState<IUser | undefined>(undefined);
 
