@@ -10,13 +10,20 @@ import NotificationsScreen from "../screens/NotificationsScreen";
 import UserScreen from "../screens/UserScreen";
 import { HomeNavigator } from "./HomeNavigator";
 import { CronometerScreen } from "../screens/Cronometer";
+import { ITodo } from "../model/todo/todo";
+import TodoScreen from "../screens/TodoScreen";
+import TodoPage from "../screens/TodoPage";
+
 
 export type AppParamList = {
   Home: undefined;
   Notifications: undefined;
-  User: undefined;
   Cronometer: undefined;
-  Settings: undefined;
+  SignIn: undefined;
+  Login: undefined;
+  User: undefined;
+  Todo: undefined;
+  TodoPage: { todo: ITodo };
 };
 
 const Stack = createNativeStackNavigator<AppParamList>();
@@ -54,7 +61,7 @@ const AppNavigator = () => {
         options={{ title: "Notificações" }}
       />
       <Stack.Screen
-        name="Settings"
+        name="User"
         component={UserScreen}
         options={{ title: "Configurações" }}
       />
@@ -62,6 +69,16 @@ const AppNavigator = () => {
         name="Cronometer"
         component={CronometerScreen}
         options={{ title: "Cronômetro" }}
+      />
+      <Stack.Screen
+        name="Todo"
+        component={TodoScreen}
+        options={{ title: "Todo" }}
+      />
+      <Stack.Screen
+        name="TodoPage"
+        component={TodoPage}
+        options={{ title: "Pagina todo" }}
       />
     </Stack.Navigator>
   );

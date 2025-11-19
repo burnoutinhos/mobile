@@ -36,14 +36,14 @@ export default function FormEditUser({ user }: FormProps) {
     AxiosError<UserResponse>,
     UserType
   >({
-    mutationKey: ["register"],
+    mutationKey: ["userUpdate"],
     mutationFn: async (form: UserType) =>
       await api.put(endpoints.user.update, form, {
         headers: { "x-skip-auth": true },
       }),
     onSuccess: async (response) => {
         // pega o user retornado pela API
-        const updatedUser = response.data.user;
+      const updatedUser = response.data.data?.user;
     
         // salva no async storage
         await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
