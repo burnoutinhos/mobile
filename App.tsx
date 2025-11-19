@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import StackNavigator from "./src/navigators/StackNavigator";
+import StackNavigator from "./src/navigators/AppNavigator";
 import {
   PreferencesProvider,
   usePreferences,
@@ -7,6 +7,7 @@ import {
 import { AuthProvider } from "./src/context/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PaperProvider } from "react-native-paper";
+import { RootNavigator } from "./src/navigators/RootNavigator";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,7 +24,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <PreferencesProvider>
           <AuthProvider>
-            <StackNavigator />
+            <RootNavigator />
           </AuthProvider>
         </PreferencesProvider>
       </QueryClientProvider>

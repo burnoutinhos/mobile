@@ -11,4 +11,8 @@ export const queryKeys = {
     user: "user",
     userUpdate: "userUpdate",
   },
+  todo: {
+    findAll: "todos/me",
+    put: "todoUpdate"
+  }
 };

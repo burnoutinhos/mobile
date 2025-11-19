@@ -1,13 +1,17 @@
 export const endpoints = {
   auth: {
-    login: "/auth/login",
-    register: "/auth/register",
+    login: "/users/login",
+    register: "/users/register",
   },
   notification: {
-    findAll: "/notification",
+    findAll: "/notifications",
   },
   user: {
-    update: "/user",
-    userInfo: "/me"
+    update: "/users",
+    userInfo: "/users/me",
+  },
+  todo: {
+    findAll: "/todos",
+    put: "/todos"
   },
 } as const;

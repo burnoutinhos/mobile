@@ -2,8 +2,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { usePreferences } from "../context/ThemeProvider";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { AppParamList } from "../navigators/AppNavigator";
+import { useAuth } from "../context/AuthProvider";
 
-const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+const HomeScreen = () => {
+  const navigation = useNavigation<NavigationProp<AppParamList>>();
+
+  const { logout } = useAuth();
+
   const { theme } = usePreferences();
   return (
     <SafeAreaView
@@ -17,30 +24,25 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       </Text>
       <Button
         mode="contained"
-        onPress={() => {
-          navigation.navigate("SignIn");
-        }}
-        style={[styles.button]}
+        onPress={() => navigation.navigate("Cronometer")}
+        style={styles.button}
       >
-        Abrir tela de registro
+        Cronômetro
       </Button>
       <Button
         mode="contained"
-        onPress={() => {
-          navigation.navigate("Login");
-        }}
-        style={[styles.button]}
+        onPress={() => navigation.navigate("Todo")}
+        style={styles.button}
       >
-        Abrir tela de login
+        Ver Todos
       </Button>
+
       <Button
         mode="contained"
-        onPress={() => {
-          navigation.navigate("User");
-        }}
-        style={[styles.button]}
+        onPress={logout}
+        style={styles.button}
       >
-        Abrir tela de user
+        Deslogar
       </Button>
     </SafeAreaView>
   );
