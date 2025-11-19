@@ -1,11 +1,11 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePreferences } from "../context/ThemeProvider";
 import {
-  Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
   View,
+  Pressable,
 } from "react-native";
 import {
   ActivityIndicator,
@@ -14,6 +14,7 @@ import {
   Avatar,
   Surface,
   Divider,
+  IconButton,
 } from "react-native-paper";
 import { IUser } from "../model/user/user";
 import FormEditUser from "../components/FormEditUser";
@@ -22,9 +23,15 @@ import { queryKeys } from "../services/api/query-keys";
 import api from "../services/api";
 import { endpoints } from "../services/api/endpoints";
 import { AxiosError, AxiosResponse } from "axios";
+import { useAuth } from "../context/AuthProvider";
+import { CustomModal } from "../components/Modal";
+import { useState } from "react";
 
 const UserScreen = () => {
+  const [visible, setVisible] = useState(false);
+
   const { theme } = usePreferences();
+  const { logout } = useAuth();
 
   const {
     refetch,
@@ -38,6 +45,14 @@ const UserScreen = () => {
       return await api.get(endpoints.user.userInfo);
     },
   });
+
+  const handleLogout = () => {
+    setVisible(true);
+  };
+
+  const handleEditImage = () => {
+    console.log("Editar imagem");
+  };
 
   if (isLoading) {
     return (
@@ -94,8 +109,7 @@ const UserScreen = () => {
       ? user.data.name.trim().charAt(0).toUpperCase()
       : "?";
 
-
-  console.log(user.data.profileImage)
+  console.log(user.data.profileImage);
 
   return (
     <SafeAreaView
@@ -121,36 +135,60 @@ const UserScreen = () => {
           elevation={2}
         >
           <Card.Content style={styles.profileCardContent}>
-            {/* Avatar */}
-            <Surface
-              style={[
-                styles.avatarContainer,
-                // { backgroundColor: theme.colors.surfaceVariant },
-              ]}
-              elevation={4}
-            >
-              {user.data.profileImage !== null ? (
-                <Avatar.Image
-                  source={{ uri: user.data.profileImage }}
-                  size={120}
-                  style={styles.avatar}
-                />
-              ) : (
-                  <Avatar.Text
-                    size={120}
-                    label={initial}
-                    style={{
-                      backgroundColor: theme.colors.primaryContainer,
-                      borderRadius: 100,
-                    }}
-                    labelStyle={{
-                      color: theme.colors.onPrimaryContainer,
-                      // fontSize: 56,
-                      fontWeight: "700",
-                    }}
-                  />
-              )}
-            </Surface>
+            {/* Avatar com botões de ação */}
+            <View style={styles.avatarRow}>
+              {/* Botão Logout */}
+              <IconButton
+                icon="logout"
+                size={28}
+                iconColor={theme.colors.error}
+                containerColor={theme.colors.errorContainer}
+                onPress={handleLogout}
+                style={styles.actionButton}
+              />
+
+              {/* Avatar Central */}
+              <Surface
+                style={[
+                  styles.avatarContainer,
+                  { backgroundColor: theme.colors.surfaceVariant },
+                ]}
+                elevation={4}
+              >
+                {user.data.profileImage !== null ? (
+                  <Pressable onPress={handleEditImage}>
+                    <Avatar.Image
+                      source={{ uri: user.data.profileImage }}
+                      size={120}
+                    />
+                  </Pressable>
+                ) : (
+                  <Pressable onPress={handleEditImage}>
+                    <Avatar.Text
+                      size={120}
+                      label={initial}
+                      style={{
+                        backgroundColor: theme.colors.primaryContainer,
+                      }}
+                      labelStyle={{
+                        color: theme.colors.onPrimaryContainer,
+                        fontWeight: "700",
+                      }}
+                    />
+                  </Pressable>
+                )}
+              </Surface>
+
+              {/* Botão Editar Imagem */}
+              <IconButton
+                icon="image-edit-outline"
+                size={28}
+                iconColor={theme.colors.primary}
+                containerColor={theme.colors.primaryContainer}
+                onPress={handleEditImage}
+                style={styles.actionButton}
+              />
+            </View>
 
             {/* Nome e Email */}
             <View style={styles.userInfoSection}>
@@ -179,6 +217,20 @@ const UserScreen = () => {
         <View style={styles.formContainer}>
           <FormEditUser user={user.data} />
         </View>
+
+        <CustomModal
+          title="Deseja fazer logout?"
+          onDismiss={() => setVisible(false)}
+          visible={visible}
+          actions={[{
+            label: 'Logout',
+            onPress: () => logout(),
+          },
+          {
+            label: 'Cancelar',
+            onPress: () => setVisible(false),
+          }]}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -214,15 +266,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 24,
   },
+  avatarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+    marginBottom: 16,
+  },
   avatarContainer: {
     borderRadius: 100,
-    marginBottom: 16,
     overflow: "hidden",
   },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 100,
+  actionButton: {
+    margin: 0,
   },
   userInfoSection: {
     alignItems: "center",
