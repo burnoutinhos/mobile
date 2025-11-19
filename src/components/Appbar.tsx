@@ -51,7 +51,7 @@ export default function CustomNavigationBar({
   }
 
   function handlePressSettings() {
-    navigation.navigate("Settings" as any);
+    navigation.navigate("User" as any);
   }
 
   return (

@@ -1,81 +1,183 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePreferences } from "../context/ThemeProvider";
-import { Image, ScrollView, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import {
+  ActivityIndicator,
+  Text,
+  Card,
+  Avatar,
+  Surface,
+  Divider,
+} from "react-native-paper";
 import { IUser } from "../model/user/user";
-import { useEffect, useState } from "react";
 import FormEditUser from "../components/FormEditUser";
-import { EnumLanguage } from "../services/Enums";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "../services/api/query-keys";
 import api from "../services/api";
 import { endpoints } from "../services/api/endpoints";
+import { AxiosError, AxiosResponse } from "axios";
 
 const UserScreen = () => {
   const { theme } = usePreferences();
 
-  const { mutate, isPending, error, data } = useMutation({
-    mutationKey: [queryKeys.user.user],
-    mutationFn: async () => {
+  const {
+    refetch,
+    isLoading,
+    error,
+    data: user,
+    isRefetching,
+  } = useQuery<AxiosResponse<IUser>, AxiosError>({
+    queryKey: [queryKeys.user.user],
+    queryFn: async () => {
       return await api.get(endpoints.user.userInfo);
     },
   });
 
-  useEffect(() => {
-    mutate();
-  }, []);
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.centerContainer,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text
+          variant="bodyLarge"
+          style={[styles.loadingText, { color: theme.colors.onBackground }]}
+        >
+          Carregando perfil...
+        </Text>
+      </SafeAreaView>
+    );
+  }
 
-  const [user, setUser] = useState<IUser | undefined>(undefined);
+  if (!user || error) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.centerContainer,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
+        <Avatar.Icon
+          size={80}
+          icon="account-alert"
+          style={{ backgroundColor: theme.colors.errorContainer }}
+        />
+        <Text
+          variant="headlineSmall"
+          style={[styles.errorTitle, { color: theme.colors.error }]}
+        >
+          Usuário não encontrado
+        </Text>
+        <Text
+          variant="bodyMedium"
+          style={{ color: theme.colors.onBackground, textAlign: "center" }}
+        >
+          Não foi possível carregar as informações do perfil.
+        </Text>
+      </SafeAreaView>
+    );
+  }
 
-  const getUser = async () => {
-    const localUser = await AsyncStorage.getItem("user");
-    if (localUser) {
-      setUser(JSON.parse(localUser));
-    } else {
-      // nn sei oque colocar de erro
-      return;
-    }
-  };
+  console.log(user);
 
-  useEffect(() => {
-    getUser();
-  }, []);
+  const initial =
+    user.data?.name?.trim() && user.data.name.trim().length > 0
+      ? user.data.name.trim().charAt(0).toUpperCase()
+      : "?";
+
+
+  console.log(user.data.profileImage)
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView
-        contentContainerStyle={{
-          alignItems: "center",
-          padding: 16,
-          gap: 16,
-        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            colors={[theme.colors.primary]}
+          />
+        }
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View>
-          {user?.profile_image ? (
-            <Image
-              width={150}
-              height={150}
-              source={{ uri: user?.profile_image }}
-              style={{ borderRadius: 1000 }}
-            />
-          ) : (
-            <View
-              style={{
-                width: 150,
-                height: 150,
-                borderRadius: 1000,
-                backgroundColor: theme.colors.card,
-              }}
-            />
-          )}
-        </View>
+        {/* Card do Perfil */}
+        <Card
+          style={[
+            styles.profileCard,
+            { backgroundColor: theme.colors.surface },
+          ]}
+          elevation={2}
+        >
+          <Card.Content style={styles.profileCardContent}>
+            {/* Avatar */}
+            <Surface
+              style={[
+                styles.avatarContainer,
+                // { backgroundColor: theme.colors.surfaceVariant },
+              ]}
+              elevation={4}
+            >
+              {user.data.profileImage !== null ? (
+                <Avatar.Image
+                  source={{ uri: user.data.profileImage }}
+                  size={120}
+                  style={styles.avatar}
+                />
+              ) : (
+                  <Avatar.Text
+                    size={120}
+                    label={initial}
+                    style={{
+                      backgroundColor: theme.colors.primaryContainer,
+                      borderRadius: 100,
+                    }}
+                    labelStyle={{
+                      color: theme.colors.onPrimaryContainer,
+                      // fontSize: 56,
+                      fontWeight: "700",
+                    }}
+                  />
+              )}
+            </Surface>
 
-        <View style={{ width: "100%" }}>
-          <FormEditUser user={userLocal} />
+            {/* Nome e Email */}
+            <View style={styles.userInfoSection}>
+              <Text
+                variant="headlineMedium"
+                style={[styles.userName, { color: theme.colors.onSurface }]}
+              >
+                {user.data.name}
+              </Text>
+              <Text
+                variant="bodyLarge"
+                style={[
+                  styles.userEmail,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {user.data.email}
+              </Text>
+            </View>
+
+            <Divider style={styles.divider} />
+          </Card.Content>
+        </Card>
+
+        {/* Formulário de Edição */}
+        <View style={styles.formContainer}>
+          <FormEditUser user={user.data} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -85,29 +187,61 @@ const UserScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    alignItems: "center",
   },
-  title: {
-    fontSize: 28,
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 16,
+  },
+  loadingText: {
+    marginTop: 16,
+  },
+  errorTitle: {
+    marginTop: 16,
+    marginBottom: 8,
     fontWeight: "600",
+  },
+  profileCard: {
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  profileCardContent: {
+    alignItems: "center",
+    padding: 24,
+  },
+  avatarContainer: {
+    borderRadius: 100,
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 100,
+  },
+  userInfoSection: {
+    alignItems: "center",
     marginBottom: 16,
   },
-  label: {
-    fontSize: 16,
-    paddingVertical: 4,
-  },
-  input: {
-    marginTop: 8,
+  userName: {
+    fontWeight: "700",
     marginBottom: 4,
+    textAlign: "center",
   },
-  text: {
-    fontSize: 16,
+  userEmail: {
+    textAlign: "center",
   },
-  button: {
-    alignSelf: "stretch",
-    borderRadius: 8,
-    paddingVertical: 6,
+  divider: {
+    width: "100%",
+    marginTop: 8,
+  },
+  formContainer: {
+    width: "100%",
   },
 });
 

@@ -31,6 +31,14 @@ const HomeScreen = () => {
       </Button>
       <Button
         mode="contained"
+        onPress={() => navigation.navigate("Todo")}
+        style={styles.button}
+      >
+        Ver Todos
+      </Button>
+
+      <Button
+        mode="contained"
         onPress={logout}
         style={styles.button}
       >

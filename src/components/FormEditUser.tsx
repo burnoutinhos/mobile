@@ -4,15 +4,24 @@ import { usePreferences } from "../context/ThemeProvider";
 import { UserSchema, UserType } from "../model/user/UserTypes";
 import { IUser } from "../model/user/user";
 import { useMutation } from "@tanstack/react-query";
-import { UserResponse } from "../model/auth/types";
 import { AxiosError, AxiosResponse } from "axios";
 import { endpoints } from "../services/api/endpoints";
 import api from "../services/api";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native";
-import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
-import { Dropdown } from "react-native-paper-dropdown";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  Text,
+  TextInput,
+  Card,
+  IconButton,
+  Divider,
+  Banner,
+} from "react-native-paper";
+import { queryKeys } from "../services/api/query-keys";
+import { ErrorResponseDTO } from "../model/types";
+import { AuthResponse } from "../model/auth/types";
+import { useAuth } from "../context/AuthProvider";
 
 interface FormProps {
   user: IUser;
@@ -21,35 +30,26 @@ interface FormProps {
 export default function FormEditUser({ user }: FormProps) {
   const { theme } = usePreferences();
   const formikRef = useRef<FormikProps<UserType> | null>(null);
-  const emailInputRef = useRef<any | null>(null);
+  const [update, setUpdate] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
-  const [showDropDown, setShowDropDown] = useState(false);
+  const { login } = useAuth();
 
-  const languageList = [
-    { label: "Português", value: "PTBR" },
-    { label: "English", value: "EN" },
-    { label: "Español", value: "ES" },
-  ];
-
-  let { isPending, error, data, mutate } = useMutation<
-    AxiosResponse<UserResponse>,
-    AxiosError<UserResponse>,
+  let { isPending, error, data, mutate, reset } = useMutation<
+    AxiosResponse<AuthResponse>,
+    AxiosError<ErrorResponseDTO>,
     UserType
   >({
-    mutationKey: ["userUpdate"],
+    mutationKey: [queryKeys.user.user],
     mutationFn: async (form: UserType) =>
-      await api.put(endpoints.user.update, form, {
-        headers: { "x-skip-auth": true },
-      }),
-    onSuccess: async (response) => {
-        // pega o user retornado pela API
-      const updatedUser = response.data.data?.user;
-    
-        // salva no async storage
-        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-
-      },    
+      await api.put(endpoints.user.update, form),
+    onSuccess: (data) => {
+      login(data.data.token);
+      setUpdate(false);
+    },
   });
+
   return (
     <Formik
       innerRef={formikRef}
@@ -64,166 +64,286 @@ export default function FormEditUser({ user }: FormProps) {
         values,
         errors,
         touched,
+        resetForm,
       }) => (
-        <SafeAreaView
-          style={[
-            styles.container,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
-          <Text
-            theme={theme}
-            style={[styles.label, { color: theme.colors.onBackground }]}
+        <View style={styles.container}>
+          <Card
+            style={[styles.card, { backgroundColor: theme.colors.surface }]}
+            elevation={1}
           >
-            Nome
-          </Text>
+            <Card.Title
+              title="Informações do Perfil"
+              titleVariant="titleLarge"
+              titleStyle={{ color: theme.colors.onSurface, fontWeight: "700" }}
+              left={(props) => (
+                <IconButton
+                  {...props}
+                  icon="account-edit"
+                  iconColor={theme.colors.primary}
+                />
+              )}
+            />
+            <Divider />
+            <Card.Content style={styles.cardContent}>
+              {/* Campo Nome */}
+              <View style={styles.inputContainer}>
+                <Text
+                  variant="labelLarge"
+                  style={[styles.label, { color: theme.colors.onSurface }]}
+                >
+                  Nome
+                </Text>
+                <TextInput
+                  onChangeText={handleChange("name")}
+                  onBlur={handleBlur("name")}
+                  placeholder="Digite seu nome"
+                  value={values.name}
+                  mode="outlined"
+                  disabled={!update}
+                  left={<TextInput.Icon icon="account" forceTextInputFocus={false} />}
+                  error={!!(errors.name && touched.name)}
+                  textColor={theme.colors.background}
+                  style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                />
+                {errors.name && touched.name && (
+                  <Text
+                    variant="bodySmall"
+                    style={[styles.errorText, { color: theme.colors.error }]}
+                  >
+                    {errors.name}
+                  </Text>
+                )}
+              </View>
 
-          <TextInput
-            onChangeText={handleChange("name")}
-            onBlur={handleBlur("name")}
-            placeholder="Digite o nome"
-            value={values.name}
-            mode="outlined"
-            style={[
-              styles.input,
-              errors.name && touched.name
-                ? {
-                    borderColor: theme.colors.error,
-                    borderWidth: 2,
-                  }
-                : undefined,
-            ]}
-            theme={{ colors: { text: theme.colors.onBackground } }}
-          />
+              {/* Campo Email */}
+              <View style={styles.inputContainer}>
+                <Text
+                  variant="labelLarge"
+                  style={[styles.label, { color: theme.colors.onSurface }]}
+                >
+                  Email
+                </Text>
+                <TextInput
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
+                  placeholder="Digite seu email"
+                  value={values.email}
+                  mode="outlined"
+                  disabled={!update}
+                  left={<TextInput.Icon icon="email" forceTextInputFocus={false} />}
+                  error={!!(errors.email && touched.email)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  textColor={theme.colors.background}
+                  style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                />
+                {errors.email && touched.email && (
+                  <Text
+                    variant="bodySmall"
+                    style={[styles.errorText, { color: theme.colors.error }]}
+                  >
+                    {errors.email}
+                  </Text>
+                )}
+              </View>
 
-          {errors.name && touched.name && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.name}
-            </Text>
-          )}
+              {/* Campo Senha */}
+              {update && (
+                <>
+                  <View style={styles.inputContainer}>
+                    <Text
+                      variant="labelLarge"
+                      style={[styles.label, { color: theme.colors.onSurface }]}
+                    >
+                      Nova Senha
+                    </Text>
+                    <TextInput
+                      onChangeText={handleChange("password")}
+                      onBlur={handleBlur("password")}
+                      placeholder="Digite sua nova senha"
+                      value={values.password}
+                      mode="outlined"
+                      disabled={!update}
+                      secureTextEntry={!showPassword}
+                      left={<TextInput.Icon icon="lock" />}
+                      right={
+                        <TextInput.Icon
+                          icon={showPassword ? "eye-off" : "eye"}
+                          onPress={() => setShowPassword(!showPassword)}
+                        />
+                      }
+                      error={!!(errors.password && touched.password)}
+                      textColor={theme.colors.background}
+                      style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                    />
+                    {errors.password && touched.password && (
+                      <Text
+                        variant="bodySmall"
+                        style={[
+                          styles.errorText,
+                          { color: theme.colors.error },
+                        ]}
+                      >
+                        {errors.password}
+                      </Text>
+                    )}
+                  </View>
 
-          <Text
-            theme={theme}
-            style={[styles.label, { color: theme.colors.onBackground }]}
-          >
-            Email
-          </Text>
+                  {/* Campo Confirmar Senha */}
+                  <View style={styles.inputContainer}>
+                    <Text
+                      variant="labelLarge"
+                      style={[styles.label, { color: theme.colors.onSurface }]}
+                    >
+                      Confirmar Senha
+                    </Text>
+                    <TextInput
+                      onChangeText={handleChange("confirmPassword")}
+                      onBlur={handleBlur("confirmPassword")}
+                      placeholder="Confirme sua senha"
+                      value={values.confirmPassword}
+                      mode="outlined"
+                      disabled={!update}
+                      secureTextEntry={!showConfirmPassword}
+                      left={<TextInput.Icon icon="lock-check" />}
+                      right={
+                        <TextInput.Icon
+                          icon={showConfirmPassword ? "eye-off" : "eye"}
+                          onPress={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                        />
+                      }
+                      error={
+                        !!(errors.confirmPassword && touched.confirmPassword)
+                      }
+                      textColor={theme.colors.background}
+                      style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                    />
+                    {errors.confirmPassword && touched.confirmPassword && (
+                      <Text
+                        variant="bodySmall"
+                        style={[
+                          styles.errorText,
+                          { color: theme.colors.error },
+                        ]}
+                      >
+                        {errors.confirmPassword}
+                      </Text>
+                    )}
+                  </View>
+                </>
+              )}
 
-          <TextInput
-            onChangeText={handleChange("email")}
-            onBlur={handleBlur("email")}
-            placeholder="Digite o email"
-            value={values.email}
-            mode="outlined"
-            ref={emailInputRef}
-            style={[
-              styles.input,
-              errors.email && touched.email
-                ? {
-                    borderColor: theme.colors.error,
-                    borderWidth: 2,
-                  }
-                : undefined,
-            ]}
-            theme={{ colors: { text: theme.colors.onBackground } }}
-          />
+              {/* Botões de Ação */}
+              <View style={styles.buttonContainer}>
+                {update ? (
+                  <>
+                    <Button
+                      mode="contained"
+                      onPress={() => handleSubmit()}
+                      style={[
+                        styles.button,
+                        // { backgroundColor: theme.colors.primary, flex: 1 },
+                      ]}
+                      labelStyle={styles.buttonLabel}
+                      contentStyle={styles.buttonContent}
+                      icon="check"
+                      disabled={isPending}
+                    >
+                      Salvar
+                    </Button>
+                    <Button
+                      mode="outlined"
+                      onPress={() => {
+                        setUpdate(false);
+                        resetForm();
+                        reset();
+                      }}
+                      style={[styles.button, { flex: 1 }]}
+                      labelStyle={styles.buttonLabel}
+                      contentStyle={styles.buttonContent}
+                      icon="close"
+                      disabled={isPending}
+                    >
+                      Cancelar
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    mode="contained"
+                    onPress={() => setUpdate(true)}
+                    style={[
+                      styles.button,
+                    ]}
+                    labelStyle={styles.buttonLabel}
+                    contentStyle={styles.buttonContent}
+                    icon="pencil"
+                  >
+                    Editar Perfil
+                  </Button>
+                )}
+              </View>
 
-          {errors.email && touched.email && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.email}
-            </Text>
-          )}
+              {/* Loading */}
+              {isPending && (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={theme.colors.primary} />
+                  <Text
+                    variant="bodyMedium"
+                    style={{ color: theme.colors.onSurface, marginTop: 8 }}
+                  >
+                    Atualizando perfil...
+                  </Text>
+                </View>
+              )}
+            </Card.Content>
+          </Card>
 
-          <Text
-            theme={theme}
-            style={[styles.label, { color: theme.colors.onBackground }]}
-          >
-            Senha
-          </Text>
-
-          <TextInput
-            onChangeText={handleChange("password")}
-            onBlur={handleBlur("password")}
-            placeholder="Digite sua senha"
-            value={values.password}
-            mode="outlined"
-            style={[
-              styles.input,
-              errors.password && touched.password
-                ? {
-                    borderColor: theme.colors.error,
-                    borderWidth: 2,
-                  }
-                : undefined,
-            ]}
-            theme={{ colors: { text: theme.colors.onBackground } }}
-          />
-
-          {errors.password && touched.password && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.password}
-            </Text>
-          )}
-
-          <Text
-            theme={theme}
-            style={[styles.label, { color: theme.colors.onBackground }]}
-          >
-            Confirmar Senha
-          </Text>
-
-          <TextInput
-            onChangeText={handleChange("confirmPassword")}
-            onBlur={handleBlur("confirmPassword")}
-            placeholder="Confirme sua senha"
-            value={values.confirmPassword}
-            mode="outlined"
-            secureTextEntry
-            style={[
-              styles.input,
-              errors.confirmPassword && touched.confirmPassword
-                ? {
-                    borderColor: theme.colors.error,
-                    borderWidth: 2,
-                  }
-                : undefined,
-            ]}
-            theme={{ colors: { text: theme.colors.onBackground } }}
-          />
-
-          {errors.confirmPassword && touched.confirmPassword && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.confirmPassword}
-            </Text>
-          )}
-
-          <Button
-            mode="contained"
-            onPress={() => handleSubmit()}
-            style={[styles.button, { backgroundColor: theme.colors.primary }]}
-            labelStyle={[styles.buttonLabel, { color: theme.colors.onPrimary }]}
-            contentStyle={styles.buttonContent}
-          >
-            Atualizar Perfil
-          </Button>
-
-          {isPending && <ActivityIndicator size="large" />}
-          {error && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {error.message}
-            </Text>
-          )}
+          {/* Mensagem de Sucesso */}
           {data && (
-            <Text
-              style={[
-                styles.label,
-                { color: "green", fontSize: 18, textAlign: "center" },
+            <Banner
+              visible={!!data}
+              actions={[
+                {
+                  label: "OK",
+                  onPress: () => reset(),
+                },
               ]}
+              icon="check-circle"
+              style={{
+                backgroundColor: theme.colors.primaryContainer,
+                marginTop: 16,
+              }}
             >
-              {data.data.message}
-            </Text>
+              <Text style={{ color: theme.colors.onPrimaryContainer }}>
+                {data.data.message}
+              </Text>
+            </Banner>
           )}
-        </SafeAreaView>
+
+          {/* Mensagem de Erro */}
+          {error && (
+            <Banner
+              visible={!!error}
+              actions={[
+                {
+                  label: "Fechar",
+                  onPress: () => reset(),
+                },
+              ]}
+              icon="alert-circle"
+              style={{
+                backgroundColor: theme.colors.errorContainer,
+                marginTop: 16,
+              }}
+            >
+              <Text style={{ color: theme.colors.onErrorContainer }}>
+                {error.message}
+              </Text>
+            </Banner>
+          )}
+        </View>
       )}
     </Formik>
   );
@@ -231,31 +351,47 @@ export default function FormEditUser({ user }: FormProps) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 32,
-    flex: 1,
+    width: "100%",
+  },
+  card: {
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  cardContent: {
+    paddingTop: 16,
+    gap: 8,
+  },
+  inputContainer: {
+    marginBottom: 12,
   },
   label: {
-    fontSize: 16,
-    paddingVertical: 4,
-  },
-  input: {
-    marginTop: 8,
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: "600",
   },
   errorText: {
-    paddingVertical: 4,
-    marginBottom: 8,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 16,
+    justifyContent: 'center'
   },
   button: {
-    paddingVertical: 4,
-    marginVertical: 8,
-    borderRadius: 6,
+    borderRadius: 12,
   },
   buttonContent: {
-    height: 44,
+    height: 48,
   },
   buttonLabel: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+    padding: 16,
   },
 });

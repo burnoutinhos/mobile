@@ -6,5 +6,5 @@ export interface IUser {
     email: string;
     password: string;
     language: EnumLanguage;
-    profile_image: string;
+    profileImage: string;
 }

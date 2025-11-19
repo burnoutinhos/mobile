@@ -12,7 +12,7 @@ export const queryKeys = {
     userUpdate: "userUpdate",
   },
   todo: {
-    findAll: "todos",
+    findAll: "todos/me",
     put: "todoUpdate"
   }
 };

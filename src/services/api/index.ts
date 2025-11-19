@@ -1,6 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "./mock/index";
 import { api } from "./axios-client";
+import { useAuth } from "../../context/AuthProvider";
+
+const getToken = async () => {
+  const { token } = useAuth();
+  return token;
+};
 
 // Interceptor de requisição
 api.interceptors.request.use(
@@ -15,30 +21,26 @@ api.interceptors.request.use(
       data: config.data,
     });
 
-    const headers = (config.headers as any) || {};
+    const headers = config.headers;
 
-    const skipAuthRaw = headers["x-skip-auth"] ?? headers["X-Skip-Auth"];
-    const shouldSkip =
-      skipAuthRaw === true ||
-      (typeof skipAuthRaw === "string" && skipAuthRaw.toLowerCase() === "true");
+    const skipAuth = headers["x-skip-auth"] === true;
 
     if (headers["x-skip-auth"]) delete headers["x-skip-auth"];
-    if (headers["X-Skip-Auth"]) delete headers["X-Skip-Auth"];
 
-    if (shouldSkip) {
+    if (skipAuth) {
       config.headers = headers;
       return config;
     }
 
     try {
-      // Lê o token atual do AsyncStorage (evita usar hooks aqui)
-      const token = await AsyncStorage.getItem("TOKEN");
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-    } catch (e) {
-      // falha ao ler AsyncStorage -> enviar sem Authorization
-    }
+         // Directly read the token from AsyncStorage (as per the commented line)
+         const token = await AsyncStorage.getItem("TOKEN");
+         if (token) {
+           headers["Authorization"] = `Bearer ${token}`;
+         }
+       } catch (e) {
+         // Optionally log or handle the error
+       }
 
     config.headers = headers;
     return config;
