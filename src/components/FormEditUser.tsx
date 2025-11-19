@@ -22,6 +22,9 @@ import { queryKeys } from "../services/api/query-keys";
 import { ErrorResponseDTO } from "../model/types";
 import { AuthResponse } from "../model/auth/types";
 import { useAuth } from "../context/AuthProvider";
+import { CustomModal } from "./Modal";
+import { ConfirmPasswordSchema } from "../model/auth/ConfirmPassword";
+import ConfirmPasswordToEdit from "./ConfirmPasswordToEdit";
 
 interface FormProps {
   user: IUser;
@@ -32,7 +35,10 @@ export default function FormEditUser({ user }: FormProps) {
   const formikRef = useRef<FormikProps<UserType> | null>(null);
   const [update, setUpdate] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
+
+  const [confirmEditVisible, setConfirmEditVisible] = useState<boolean>(false);
 
   const { login } = useAuth();
 
@@ -100,10 +106,18 @@ export default function FormEditUser({ user }: FormProps) {
                   value={values.name}
                   mode="outlined"
                   disabled={!update}
-                  left={<TextInput.Icon icon="account" forceTextInputFocus={false} />}
+                  left={
+                    <TextInput.Icon
+                      icon="account"
+                      forceTextInputFocus={false}
+                    />
+                  }
                   error={!!(errors.name && touched.name)}
                   textColor={theme.colors.background}
-                  style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                  style={{
+                    backgroundColor: theme.colors.onBackground,
+                    color: theme.colors.background,
+                  }}
                 />
                 {errors.name && touched.name && (
                   <Text
@@ -130,12 +144,17 @@ export default function FormEditUser({ user }: FormProps) {
                   value={values.email}
                   mode="outlined"
                   disabled={!update}
-                  left={<TextInput.Icon icon="email" forceTextInputFocus={false} />}
+                  left={
+                    <TextInput.Icon icon="email" forceTextInputFocus={false} />
+                  }
                   error={!!(errors.email && touched.email)}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   textColor={theme.colors.background}
-                  style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                  style={{
+                    backgroundColor: theme.colors.onBackground,
+                    color: theme.colors.background,
+                  }}
                 />
                 {errors.email && touched.email && (
                   <Text
@@ -174,7 +193,10 @@ export default function FormEditUser({ user }: FormProps) {
                       }
                       error={!!(errors.password && touched.password)}
                       textColor={theme.colors.background}
-                      style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                      style={{
+                        backgroundColor: theme.colors.onBackground,
+                        color: theme.colors.background,
+                      }}
                     />
                     {errors.password && touched.password && (
                       <Text
@@ -218,7 +240,10 @@ export default function FormEditUser({ user }: FormProps) {
                         !!(errors.confirmPassword && touched.confirmPassword)
                       }
                       textColor={theme.colors.background}
-                      style={{backgroundColor: theme.colors.onBackground, color: theme.colors.background}}
+                      style={{
+                        backgroundColor: theme.colors.onBackground,
+                        color: theme.colors.background,
+                      }}
                     />
                     {errors.confirmPassword && touched.confirmPassword && (
                       <Text
@@ -272,10 +297,10 @@ export default function FormEditUser({ user }: FormProps) {
                 ) : (
                   <Button
                     mode="contained"
-                    onPress={() => setUpdate(true)}
-                    style={[
-                      styles.button,
-                    ]}
+                    onPress={() => {
+                      setConfirmEditVisible(true);
+                    }}
+                    style={[styles.button]}
                     labelStyle={styles.buttonLabel}
                     contentStyle={styles.buttonContent}
                     icon="pencil"
@@ -285,10 +310,19 @@ export default function FormEditUser({ user }: FormProps) {
                 )}
               </View>
 
+              <ConfirmPasswordToEdit
+                confirmEditVisible={confirmEditVisible}
+                setConfirmEditVisible={setConfirmEditVisible}
+                setUpdate={setUpdate}
+              />
+
               {/* Loading */}
               {isPending && (
                 <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color={theme.colors.primary} />
+                  <ActivityIndicator
+                    size="large"
+                    color={theme.colors.primary}
+                  />
                   <Text
                     variant="bodyMedium"
                     style={{ color: theme.colors.onSurface, marginTop: 8 }}
@@ -376,7 +410,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     marginTop: 16,
-    justifyContent: 'center'
+    justifyContent: "center",
   },
   button: {
     borderRadius: 12,
