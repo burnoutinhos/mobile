@@ -10,4 +10,8 @@ const emptyLoginForm: ConfirmPasswordType = {
   password: "",
 };
 
-export { ConfirmPasswordSchema, ConfirmPasswordType, emptyLoginForm };
+type ConfirmPasswordResponse = {
+  validPassword: boolean;
+}
+
+export { ConfirmPasswordSchema, ConfirmPasswordType, emptyLoginForm, ConfirmPasswordResponse };

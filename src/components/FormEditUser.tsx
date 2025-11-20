@@ -1,9 +1,9 @@
 import { Formik, FormikProps } from "formik";
 import React, { useRef, useState } from "react";
 import { usePreferences } from "../context/ThemeProvider";
-import { UserSchema, UserType } from "../model/user/UserTypes";
+import { UserEditSchema, UserType } from "../model/user/UserTypes";
 import { IUser } from "../model/user/user";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { endpoints } from "../services/api/endpoints";
 import api from "../services/api";
@@ -45,10 +45,10 @@ export default function FormEditUser({ user }: FormProps) {
   let { isPending, error, data, mutate, reset } = useMutation<
     AxiosResponse<AuthResponse>,
     AxiosError<ErrorResponseDTO>,
-    UserType
+    Omit<UserType, 'confirmPassword'>
   >({
     mutationKey: [queryKeys.user.user],
-    mutationFn: async (form: UserType) =>
+    mutationFn: async (form: Omit<UserType, 'confirmPassword'>) =>
       await api.put(endpoints.user.update, form),
     onSuccess: (data) => {
       login(data.data.token);
@@ -59,9 +59,26 @@ export default function FormEditUser({ user }: FormProps) {
   return (
     <Formik
       innerRef={formikRef}
-      initialValues={user as UserType}
-      onSubmit={(values: UserType) => mutate(values)}
-      validationSchema={UserSchema}
+      initialValues={{...user, password: '', confirmPassword: ''} as UserType}
+      onSubmit={(values: UserType) => {
+        console.log("🔍 FormEditUser - onSubmit chamado");
+        console.log("🔍 Valores:", values);
+        
+        // Cria o payload apenas com os campos que queremos editar
+        const payload: any = {
+          name: values.name,
+          email: values.email,
+        };
+        
+        // Adiciona password apenas se foi preenchido
+        if (values.password && values.password.trim() !== '') {
+          payload.password = values.password;
+        }
+        
+        console.log("📤 Payload final:", payload);
+        mutate(payload);
+      }}
+      validationSchema={UserEditSchema}
     >
       {({
         handleChange,
@@ -71,6 +88,7 @@ export default function FormEditUser({ user }: FormProps) {
         errors,
         touched,
         resetForm,
+        setFieldValue
       }) => (
         <View style={styles.container}>
           <Card
@@ -266,14 +284,18 @@ export default function FormEditUser({ user }: FormProps) {
                   <>
                     <Button
                       mode="contained"
-                      onPress={() => handleSubmit()}
-                      style={[
-                        styles.button,
-                        // { backgroundColor: theme.colors.primary, flex: 1 },
-                      ]}
+                      onPress={() => {
+                        console.log("🔘 Botão Salvar clicado");
+                        console.log("🔍 Valores atuais:", values);
+                        console.log("🔍 Erros:", errors);
+                        console.log("🔍 Touched:", touched);
+                        handleSubmit();
+                      }}
+                      style={styles.button}
                       labelStyle={styles.buttonLabel}
                       contentStyle={styles.buttonContent}
                       icon="check"
+                      loading={isPending}
                       disabled={isPending}
                     >
                       Salvar
@@ -314,6 +336,7 @@ export default function FormEditUser({ user }: FormProps) {
                 confirmEditVisible={confirmEditVisible}
                 setConfirmEditVisible={setConfirmEditVisible}
                 setUpdate={setUpdate}
+                setFieldValue={setFieldValue}
               />
 
               {/* Loading */}

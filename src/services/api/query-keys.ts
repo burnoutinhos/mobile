@@ -9,6 +9,7 @@ export const queryKeys = {
   },
   user: {
     user: "user",
+    userPassword: "userPassword",
     userUpdate: "userUpdate",
   },
   todo: {

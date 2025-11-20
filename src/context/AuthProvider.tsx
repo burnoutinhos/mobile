@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { setUnauthorizedCallback } from "../services/api";
 
 interface AuthContextProps {
   token: string | null;
@@ -21,6 +22,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     loadStoredToken();
+  }, []);
+
+  useEffect(() => {
+    // Registra o callback de logout quando o componente monta
+    setUnauthorizedCallback(() => {
+      logout();
+    });
   }, []);
 
   const loadStoredToken = async () => {

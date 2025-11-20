@@ -9,6 +9,7 @@ export const endpoints = {
   user: {
     update: "/users",
     userInfo: "/users/me",
+    verifyPassword: "/users/verify-password",
   },
   todo: {
     findAll: "/todos",

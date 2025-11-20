@@ -1,17 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "./mock/index";
 import { api } from "./axios-client";
-import { useAuth } from "../../context/AuthProvider";
 
-const getToken = async () => {
-  const { token } = useAuth();
-  return token;
+// Callback para logout
+let onUnauthorizedCallback: (() => void) | null = null;
+
+export const setUnauthorizedCallback = (callback: () => void) => {
+  onUnauthorizedCallback = callback;
 };
 
 // Interceptor de requisição
 api.interceptors.request.use(
   async (config) => {
-    // Log da requisição
     console.log("🚀 REQUEST:", {
       method: config.method?.toUpperCase(),
       url: config.url,
@@ -22,7 +22,6 @@ api.interceptors.request.use(
     });
 
     const headers = config.headers;
-
     const skipAuth = headers["x-skip-auth"] === true;
 
     if (headers["x-skip-auth"]) delete headers["x-skip-auth"];
@@ -33,20 +32,18 @@ api.interceptors.request.use(
     }
 
     try {
-         // Directly read the token from AsyncStorage (as per the commented line)
-         const token = await AsyncStorage.getItem("TOKEN");
-         if (token) {
-           headers["Authorization"] = `Bearer ${token}`;
-         }
-       } catch (e) {
-         // Optionally log or handle the error
-       }
+      const token = await AsyncStorage.getItem("TOKEN");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    } catch (e) {
+      // Optionally log or handle the error
+    }
 
     config.headers = headers;
     return config;
   },
   (error) => {
-    // Log de erro na requisição
     console.log("❌ REQUEST ERROR:", error);
     return Promise.reject(error);
   },
@@ -55,7 +52,6 @@ api.interceptors.request.use(
 // Interceptor de resposta
 api.interceptors.response.use(
   (response) => {
-    // Log da resposta bem-sucedida
     console.log("✅ RESPONSE:", {
       status: response.status,
       statusText: response.statusText,
@@ -64,13 +60,19 @@ api.interceptors.response.use(
     });
     return response;
   },
-  (error) => {
-    // Substitui a mensagem do erro pela mensagem do backend (se existir)
+  async (error) => {
     if (error.response?.data?.message) {
       error.message = error.response.data.message;
     }
 
-    // Log de erro na resposta
+    // Se receber 403, executa o logout
+    if (error.response?.status === 403) {
+      console.log("🔒 403 Forbidden - Executando logout");
+      if (onUnauthorizedCallback) {
+        onUnauthorizedCallback();
+      }
+    }
+
     console.log("❌ RESPONSE ERROR:", {
       message: error.message,
       status: error.response?.status,
