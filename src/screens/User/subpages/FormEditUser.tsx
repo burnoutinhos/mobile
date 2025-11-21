@@ -1,12 +1,7 @@
 import { Formik, FormikProps } from "formik";
 import React, { useRef, useState } from "react";
-import { usePreferences } from "../context/ThemeProvider";
-import { UserEditSchema, UserType } from "../model/user/UserTypes";
-import { IUser } from "../model/user/user";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { endpoints } from "../services/api/endpoints";
-import api from "../services/api";
 import { StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -18,13 +13,16 @@ import {
   Divider,
   Banner,
 } from "react-native-paper";
-import { queryKeys } from "../services/api/query-keys";
-import { ErrorResponseDTO } from "../model/types";
-import { AuthResponse } from "../model/auth/types";
-import { useAuth } from "../context/AuthProvider";
-import { CustomModal } from "./Modal";
-import { ConfirmPasswordSchema } from "../model/auth/ConfirmPassword";
-import ConfirmPasswordToEdit from "./ConfirmPasswordToEdit";
+import ConfirmPasswordToEdit from "../components/ConfirmPasswordToEdit";
+import { useAuth } from "../../../context/AuthProvider";
+import { usePreferences } from "../../../context/ThemeProvider";
+import { AuthResponse } from "../../../model/auth/types";
+import { ErrorResponseDTO } from "../../../model/types";
+import { IUser } from "../../../model/user/user";
+import { UserType, UserEditSchema } from "../../../model/user/UserTypes";
+import api from "../../../services/api";
+import { endpoints } from "../../../services/api/endpoints";
+import { queryKeys } from "../../../services/api/query-keys";
 
 interface FormProps {
   user: IUser;
@@ -63,18 +61,18 @@ export default function FormEditUser({ user }: FormProps) {
       onSubmit={(values: UserType) => {
         console.log("🔍 FormEditUser - onSubmit chamado");
         console.log("🔍 Valores:", values);
-        
+
         // Cria o payload apenas com os campos que queremos editar
         const payload: any = {
           name: values.name,
           email: values.email,
         };
-        
+
         // Adiciona password apenas se foi preenchido
         if (values.password && values.password.trim() !== '') {
           payload.password = values.password;
         }
-        
+
         console.log("📤 Payload final:", payload);
         mutate(payload);
       }}

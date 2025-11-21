@@ -1,5 +1,4 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { usePreferences } from "../context/ThemeProvider";
 import {
   RefreshControl,
   ScrollView,
@@ -16,16 +15,17 @@ import {
   Divider,
   IconButton,
 } from "react-native-paper";
-import { IUser } from "../model/user/user";
-import FormEditUser from "../components/FormEditUser";
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "../services/api/query-keys";
-import api from "../services/api";
-import { endpoints } from "../services/api/endpoints";
 import { AxiosError, AxiosResponse } from "axios";
-import { useAuth } from "../context/AuthProvider";
-import { CustomModal } from "../components/Modal";
 import { useState } from "react";
+import { CustomModal } from "../../components/Modal";
+import { useAuth } from "../../context/AuthProvider";
+import { usePreferences } from "../../context/ThemeProvider";
+import { IUser } from "../../model/user/user";
+import api from "../../services/api";
+import { endpoints } from "../../services/api/endpoints";
+import { queryKeys } from "../../services/api/query-keys";
+import FormEditUser from "./subpages/FormEditUser";
 
 const UserScreen = () => {
   const [visible, setVisible] = useState(false);

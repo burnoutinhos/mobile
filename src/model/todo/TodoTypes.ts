@@ -2,12 +2,12 @@ import * as yup from "yup";
 import { EnumTypeTodo } from "../../services/Enums";
 
 const TodoSchema = yup.object().shape({
-  name: yup.string().optional(),
-  start: yup.date().optional(),
-  end: yup.date().optional(),
+  name: yup.string().required("Nome é obrigatório"),
+  start: yup.date().required("Data de início é obrigatória"),
+  end: yup.date().required("Data de término é obrigatória"),
   description: yup.string().optional(),
   type: yup.mixed<EnumTypeTodo>().oneOf(Object.values(EnumTypeTodo) as EnumTypeTodo[], "Tipo inválido").optional(),
-  isCompleted: yup.number().optional()
+  isCompleted: yup.boolean().optional()
 })
 
 type TodoType = yup.InferType<typeof TodoSchema>
@@ -18,7 +18,7 @@ const emptyTodoForm: TodoType = {
   end: new Date(),
   description: "",
   type: EnumTypeTodo.TODO,
-  isCompleted: 0
+  isCompleted: false
 }
 
 export {TodoSchema, TodoType, emptyTodoForm}

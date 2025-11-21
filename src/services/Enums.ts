@@ -5,7 +5,7 @@ export enum EnumLanguage{
 }
 
 export enum EnumTypeTodo {
-  TODO="todo",
-  FOCUS_MODE="focus_mode",
-  REST="rest"
+  TODO="TODO",
+  FOCUS_MODE="FOCUS_MODE",
+  REST="REST"
 }

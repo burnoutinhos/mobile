@@ -14,6 +14,9 @@ export const queryKeys = {
   },
   todo: {
     findAll: "todos/me",
-    put: "todoUpdate"
+    me: "todos/me",
+    put: "todoUpdate",
+    create: "todoCreate",
+    delete: "todoDelete",
   }
 };

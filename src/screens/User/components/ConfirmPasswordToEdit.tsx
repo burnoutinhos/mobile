@@ -1,18 +1,18 @@
 import { Formik } from "formik";
-import { CustomModal } from "./Modal";
+import { CustomModal } from "../../../components/Modal";
 import {
   ConfirmPasswordResponse,
   ConfirmPasswordSchema,
   ConfirmPasswordType,
-} from "../model/auth/ConfirmPassword";
+} from "../../../model/auth/ConfirmPassword";
 import { StyleSheet, View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
-import { usePreferences } from "../context/ThemeProvider";
-import { endpoints } from "../services/api/endpoints";
+import { usePreferences } from "../../../context/ThemeProvider";
+import { endpoints } from "../../../services/api/endpoints";
 import { AxiosError, AxiosResponse } from "axios";
 import { useMutation } from "@tanstack/react-query";
-import { queryKeys } from "../services/api/query-keys";
-import api from "../services/api";
+import { queryKeys } from "../../../services/api/query-keys";
+import api from "../../../services/api";
 
 interface Props {
   confirmEditVisible: boolean;

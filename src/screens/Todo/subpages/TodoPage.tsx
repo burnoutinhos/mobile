@@ -1,25 +1,24 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context"
-import { StackParamsList } from "../navigators/StackNavigator";
+import { AppParamList } from "../../../navigators/AppNavigator";
 import {
-  Pressable,
-  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
-import { usePreferences } from "../context/ThemeProvider";
+import { usePreferences } from "../../../context/ThemeProvider";
 import { Text } from "react-native-paper";
+import FormEditOrCreateTodo from "./FormEditOrCreateTodo";
 
 
 const TodoPage = () => {
-  
-  const route = useRoute<RouteProp<StackParamsList,"TodoPage">>()
-  
+
+  const route = useRoute<RouteProp<AppParamList,"TodoPage">>()
+
   const { theme } = usePreferences();
-  
+
   const todo = route.params.todo
-  
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
@@ -39,9 +38,9 @@ const TodoPage = () => {
               >
                 Editar Tarefa
               </Text>
-      
+
               <View style={{ width: "100%" }}>
-                <FormEditTodo todo={todo} />
+                <FormEditOrCreateTodo todo={todo} />
               </View>
             </ScrollView>
     </SafeAreaView>

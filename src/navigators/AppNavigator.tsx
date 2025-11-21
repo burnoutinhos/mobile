@@ -7,12 +7,13 @@ import LoginScreen from "../screens/LoginScreen";
 import { usePreferences } from "../context/ThemeProvider";
 import CustomNavigationBar from "../components/Appbar";
 import NotificationsScreen from "../screens/NotificationsScreen";
-import UserScreen from "../screens/UserScreen";
+import UserScreen from "../screens/User/UserScreen";
 import { HomeNavigator } from "./HomeNavigator";
 import { CronometerScreen } from "../screens/Cronometer";
 import { ITodo } from "../model/todo/todo";
-import TodoScreen from "../screens/TodoScreen";
-import TodoPage from "../screens/TodoPage";
+import TodoScreen from "../screens/Todo/TodoScreen";
+import TodoPage from "../screens/Todo/subpages/TodoPage";
+import FormEditOrCreateTodo from "../screens/Todo/subpages/FormEditOrCreateTodo";
 
 
 export type AppParamList = {
@@ -24,6 +25,7 @@ export type AppParamList = {
   User: undefined;
   Todo: undefined;
   TodoPage: { todo: ITodo };
+  FormEditOrCreateTodo: { todo: ITodo } | undefined;
 };
 
 const Stack = createNativeStackNavigator<AppParamList>();
@@ -79,6 +81,11 @@ const AppNavigator = () => {
         name="TodoPage"
         component={TodoPage}
         options={{ title: "Pagina todo" }}
+      />
+      <Stack.Screen
+        name="FormEditOrCreateTodo"
+        component={FormEditOrCreateTodo}
+        options={{ title: "Criar tarefa" }}
       />
     </Stack.Navigator>
   );

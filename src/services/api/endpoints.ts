@@ -13,6 +13,8 @@ export const endpoints = {
   },
   todo: {
     findAll: "/todos",
-    put: "/todos"
+    put: "/todos",
+    me: "/todos/me",
+    post: "/todos",
   },
 } as const;
