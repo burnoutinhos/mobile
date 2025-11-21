@@ -40,7 +40,7 @@ const ConfirmPasswordToEdit = ({
     mutationKey: [queryKeys.user.userPassword],
     mutationFn: async ({ password }: ConfirmPasswordType) =>
       {
-        const response : AxiosResponse<ConfirmPasswordResponse> = await api.get(endpoints.user.verifyPassword, {
+        await api.get(endpoints.user.verifyPassword, {
           params: { password: password },
         });
         return {
@@ -49,9 +49,9 @@ const ConfirmPasswordToEdit = ({
       },
     onSuccess: (data) => {
       setConfirmEditVisible(false);
-      setUpdate(true);
       setFieldValue('password', data.password);
       setFieldValue('confirmPassword', data.password);
+      setUpdate(true);
     },
   });
 
@@ -59,7 +59,7 @@ const ConfirmPasswordToEdit = ({
 
   return (
     <CustomModal
-      title="Confirme sua senha para editar o email"
+      title="Confirme sua senha"
       visible={confirmEditVisible}
       onDismiss={() => setConfirmEditVisible(false)}
       children={
@@ -72,38 +72,25 @@ const ConfirmPasswordToEdit = ({
           }}
           validationSchema={ConfirmPasswordSchema}
         >
-          {({ handleChange, handleSubmit, values, errors }) => (
+          {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
             <View
               style={{
-                padding: 20,
-                backgroundColor: theme.colors.background,
+                paddingHorizontal: 20,
                 borderRadius: 8,
-                shadowColor: theme.colors.shadow,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3,
-                elevation: 5,
+                paddingBottom: 20,
                 gap: 10,
               }}
             >
               <TextInput
-                label="Senha"
-                value={values.password}
-                onChangeText={handleChange("password")}
-                style={{
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                  fontSize: 16,
-                  color: theme.colors.text,
-                  backgroundColor: theme.colors.onBackground,
-                  shadowColor: theme.colors.shadow,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3,
-                  elevation: 5,
-                }}
-                secureTextEntry
+              label="Senha"
+              onChangeText={handleChange("password")}
+              onBlur={handleBlur("password")}
+              placeholder="Digite sua senha"
+              value={values.password}
+              mode="outlined"
+              error={!!(errors.password && touched.password)}
+              secureTextEntry
+              left={<TextInput.Icon icon="lock" />}
               />
 
               {errors.password && (

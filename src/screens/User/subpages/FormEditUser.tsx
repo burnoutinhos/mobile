@@ -126,14 +126,14 @@ export default function FormEditUser({ user }: FormProps) {
                     <TextInput.Icon
                       icon="account"
                       forceTextInputFocus={false}
+                      color={theme.colors.onBackground}
                     />
                   }
-                  error={!!(errors.name && touched.name)}
-                  textColor={theme.colors.background}
                   style={{
-                    backgroundColor: theme.colors.onBackground,
-                    color: theme.colors.background,
+                    backgroundColor: theme.colors.background,
                   }}
+                  textColor={theme.colors.onBackground}
+                  error={!!(errors.name && touched.name)}
                 />
                 {errors.name && touched.name && (
                   <Text
@@ -161,16 +161,15 @@ export default function FormEditUser({ user }: FormProps) {
                   mode="outlined"
                   disabled={!update}
                   left={
-                    <TextInput.Icon icon="email" forceTextInputFocus={false} />
+                    <TextInput.Icon icon="email" forceTextInputFocus={false} color={theme.colors.onBackground} />
                   }
+                  style={{
+                    backgroundColor: theme.colors.background,
+                  }}
+                  textColor={theme.colors.onBackground}
                   error={!!(errors.email && touched.email)}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  textColor={theme.colors.background}
-                  style={{
-                    backgroundColor: theme.colors.onBackground,
-                    color: theme.colors.background,
-                  }}
                 />
                 {errors.email && touched.email && (
                   <Text
@@ -200,19 +199,19 @@ export default function FormEditUser({ user }: FormProps) {
                       mode="outlined"
                       disabled={!update}
                       secureTextEntry={!showPassword}
-                      left={<TextInput.Icon icon="lock" />}
+                      left={<TextInput.Icon icon="lock" color={theme.colors.onBackground}  />}
                       right={
                         <TextInput.Icon
                           icon={showPassword ? "eye-off" : "eye"}
                           onPress={() => setShowPassword(!showPassword)}
+                          color={theme.colors.onBackground}
                         />
                       }
-                      error={!!(errors.password && touched.password)}
-                      textColor={theme.colors.background}
                       style={{
-                        backgroundColor: theme.colors.onBackground,
-                        color: theme.colors.background,
+                        backgroundColor: theme.colors.background,
                       }}
+                      textColor={theme.colors.onBackground}
+                      error={!!(errors.password && touched.password)}
                     />
                     {errors.password && touched.password && (
                       <Text
@@ -243,23 +242,23 @@ export default function FormEditUser({ user }: FormProps) {
                       mode="outlined"
                       disabled={!update}
                       secureTextEntry={!showConfirmPassword}
-                      left={<TextInput.Icon icon="lock-check" />}
+                      left={<TextInput.Icon icon="lock-check" color={theme.colors.onBackground} />}
                       right={
                         <TextInput.Icon
                           icon={showConfirmPassword ? "eye-off" : "eye"}
                           onPress={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
+                          color={theme.colors.onBackground}
                         />
                       }
+                      style={{
+                        backgroundColor: theme.colors.background,
+                      }}
+                      textColor={theme.colors.onBackground}
                       error={
                         !!(errors.confirmPassword && touched.confirmPassword)
                       }
-                      textColor={theme.colors.background}
-                      style={{
-                        backgroundColor: theme.colors.onBackground,
-                        color: theme.colors.background,
-                      }}
                     />
                     {errors.confirmPassword && touched.confirmPassword && (
                       <Text
@@ -283,10 +282,6 @@ export default function FormEditUser({ user }: FormProps) {
                     <Button
                       mode="contained"
                       onPress={() => {
-                        console.log("🔘 Botão Salvar clicado");
-                        console.log("🔍 Valores atuais:", values);
-                        console.log("🔍 Erros:", errors);
-                        console.log("🔍 Touched:", touched);
                         handleSubmit();
                       }}
                       style={styles.button}
@@ -337,7 +332,6 @@ export default function FormEditUser({ user }: FormProps) {
                 setFieldValue={setFieldValue}
               />
 
-              {/* Loading */}
               {isPending && (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator
@@ -355,7 +349,6 @@ export default function FormEditUser({ user }: FormProps) {
             </Card.Content>
           </Card>
 
-          {/* Mensagem de Sucesso */}
           {data && (
             <Banner
               visible={!!data}
@@ -377,7 +370,6 @@ export default function FormEditUser({ user }: FormProps) {
             </Banner>
           )}
 
-          {/* Mensagem de Erro */}
           {error && (
             <Banner
               visible={!!error}

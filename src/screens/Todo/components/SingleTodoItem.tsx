@@ -46,12 +46,12 @@ export const SingleTodoItem = ({
               >
                 {todo.name}
               </Text>
-              {isToday && (
+              {/*{isToday && (
                 <Badge
                   size={8}
                   style={{ backgroundColor: theme.colors.primary }}
                 />
-              )}
+              )}*/}
             </View>
           }
           subtitle={createdAtDate.toLocaleDateString('pt-BR')}
@@ -67,6 +67,14 @@ export const SingleTodoItem = ({
           >
             {todo.description}
           </Text>
+          {todo.suggestions && todo.suggestions.map((suggestion) => (
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
+              {suggestion.suggestion}
+            </Text>
+          ))}
         </Card.Content>
       </Card>
     </Pressable>
