@@ -7,7 +7,7 @@ import {
 import { usePreferences } from "../../../context/ThemeProvider";
 import { useRef, useState } from "react";
 import { ITodo } from "../../../model/todo/todo";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { endpoints } from "../../../services/api/endpoints";
 import api from "../../../services/api";
@@ -35,17 +35,30 @@ import DatePicker from "@dietime/react-native-date-picker";
 import { EnumTypeTodo } from "../../../services/Enums";
 import { ErrorResponseDTO } from "../../../model/types";
 import { queryKeys } from "../../../services/api/query-keys";
+import { CustomModal } from "../../../components/Modal";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { AppParamList } from "../../../navigators/AppNavigator";
 
 const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
   const { theme } = usePreferences();
   const formikRef = useRef<FormikProps<TodoType> | null>(null);
+  const navigation = useNavigation<NavigationProp<AppParamList>>();
 
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  const handleDelete = () => {
+    setDeleteModalVisible(true);
+  };
 
   const typeOptions = [
-    { label: "Tarefa", value: EnumTypeTodo.TODO, icon: "checkbox-marked-circle" },
+    {
+      label: "Tarefa",
+      value: EnumTypeTodo.TODO,
+      icon: "checkbox-marked-circle",
+    },
     { label: "Modo Foco", value: EnumTypeTodo.FOCUS_MODE, icon: "brain" },
     { label: "Descanso", value: EnumTypeTodo.REST, icon: "coffee" },
   ];
@@ -78,9 +91,24 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
       await api.post(endpoints.todo.post, form),
   });
 
-  const isPending = isPendingUpdate || isPendingCreate;
-  const error = errorUpdate || errorCreate;
-  const data = dataUpdate || dataCreate;
+  const {
+    isPending: isPendingDelete,
+    error: errorDelete,
+    data: dataDelete,
+    mutate: mutateDelete,
+    reset: resetDelete,
+  } = useMutation<AxiosResponse, AxiosError, number>({
+    mutationKey: [queryKeys.todo.delete],
+    mutationFn: async (todoId: number) =>
+      await api.delete(endpoints.todo.delete + `/${todoId}`),
+      onSuccess: () => {
+        navigation.goBack();
+      },
+  });
+
+  const isPending = isPendingUpdate || isPendingCreate || isPendingDelete;
+  const error = errorUpdate || errorCreate || errorDelete;
+  const data = dataUpdate || dataCreate || dataDelete;
 
   return (
     <SafeAreaView
@@ -98,7 +126,7 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
             innerRef={formikRef}
             initialValues={todo ? { ...todo } : emptyTodoForm}
             onSubmit={(values: TodoType) => {
-              console.log(todo)
+              console.log(todo);
               if (todo !== undefined) {
                 mutateUpdate({ todoId: todo.id, todoType: values });
               } else {
@@ -164,7 +192,10 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                     <View style={styles.inputContainer}>
                       <Text
                         variant="labelLarge"
-                        style={[styles.label, { color: theme.colors.onSurface }]}
+                        style={[
+                          styles.label,
+                          { color: theme.colors.onSurface },
+                        ]}
                       >
                         Nome
                       </Text>
@@ -189,7 +220,10 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                     <View style={styles.inputContainer}>
                       <Text
                         variant="labelLarge"
-                        style={[styles.label, { color: theme.colors.onSurface }]}
+                        style={[
+                          styles.label,
+                          { color: theme.colors.onSurface },
+                        ]}
                       >
                         Descrição
                       </Text>
@@ -201,8 +235,15 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                         mode="outlined"
                         error={!!(errors.description && touched.description)}
                         left={<TextInput.Icon icon="text" />}
-                        contentStyle={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10 }}
-                        style={{ paddingVertical: 10, justifyContent: 'center' }}
+                        contentStyle={{
+                          justifyContent: "center",
+                          alignItems: "center",
+                          paddingVertical: 10,
+                        }}
+                        style={{
+                          paddingVertical: 10,
+                          justifyContent: "center",
+                        }}
                         multiline
                         numberOfLines={3}
                       />
@@ -218,7 +259,10 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                     <View style={styles.inputContainer}>
                       <Text
                         variant="labelLarge"
-                        style={[styles.label, { color: theme.colors.onSurface }]}
+                        style={[
+                          styles.label,
+                          { color: theme.colors.onSurface },
+                        ]}
                       >
                         Tipo de Tarefa
                       </Text>
@@ -232,12 +276,14 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                             style={styles.selectButton}
                             contentStyle={styles.selectButtonContent}
                             icon={
-                              typeOptions.find((opt) => opt.value === values.type)
-                                ?.icon || "chevron-down"
+                              typeOptions.find(
+                                (opt) => opt.value === values.type,
+                              )?.icon || "chevron-down"
                             }
                           >
-                            {typeOptions.find((opt) => opt.value === values.type)
-                              ?.label || "Selecione o tipo"}
+                            {typeOptions.find(
+                              (opt) => opt.value === values.type,
+                            )?.label || "Selecione o tipo"}
                           </Button>
                         }
                       >
@@ -265,7 +311,10 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                     <View style={styles.inputContainer}>
                       <Text
                         variant="labelLarge"
-                        style={[styles.label, { color: theme.colors.onSurface }]}
+                        style={[
+                          styles.label,
+                          { color: theme.colors.onSurface },
+                        ]}
                       >
                         Data de Início
                       </Text>
@@ -282,7 +331,9 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                       </Button>
                       {showStartPicker && (
                         <DatePicker
-                          value={values.start ? new Date(values.start) : new Date()}
+                          value={
+                            values.start ? new Date(values.start) : new Date()
+                          }
                           onChange={(date) => {
                             setFieldValue("start", date);
                             setShowStartPicker(false);
@@ -295,7 +346,10 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                     <View style={styles.inputContainer}>
                       <Text
                         variant="labelLarge"
-                        style={[styles.label, { color: theme.colors.onSurface }]}
+                        style={[
+                          styles.label,
+                          { color: theme.colors.onSurface },
+                        ]}
                       >
                         Data de Término
                       </Text>
@@ -340,7 +394,10 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                 {/* Loading */}
                 {isPending && (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={theme.colors.primary} />
+                    <ActivityIndicator
+                      size="large"
+                      color={theme.colors.primary}
+                    />
                     <Text
                       variant="bodyMedium"
                       style={{ color: theme.colors.onSurface, marginTop: 8 }}
@@ -352,6 +409,36 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
               </View>
             )}
           </Formik>
+          {todo ? (
+            <>
+              <Button
+                mode="contained"
+                onPress={() => handleDelete()}
+                style={styles.button}
+                buttonColor={theme.colors.error}
+                textColor={theme.colors.onError}
+                contentStyle={styles.buttonContent}
+                labelStyle={styles.buttonLabel}
+                icon={"delete-alert"}
+                loading={isPending}
+                disabled={isPending}
+              >
+                Deletar tarefa
+              </Button>
+              <CustomModal
+                title="Deletar Tarefa"
+                onDismiss={() => setDeleteModalVisible(false)}
+                visible={deleteModalVisible}
+                actions={[
+                  {
+                    label: "Apagar",
+                    onPress: () => mutateDelete(todo.id),
+                    icon: "delete-alert",
+                  },
+                ]}
+              />
+            </>
+          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -378,7 +465,9 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
           }}
         >
           <Text style={{ color: theme.colors.onPrimaryContainer }}>
-            {todo ? "Tarefa atualizada com sucesso!" : "Tarefa criada com sucesso!"}
+            {todo
+              ? "Tarefa atualizada com sucesso!"
+              : "Tarefa criada com sucesso!"}
           </Text>
         </Banner>
       )}

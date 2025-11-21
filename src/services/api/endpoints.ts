@@ -16,5 +16,6 @@ export const endpoints = {
     put: "/todos",
     me: "/todos/me",
     post: "/todos",
+    delete: "/todos",
   },
 } as const;

@@ -46,12 +46,6 @@ export const SingleTodoItem = ({
               >
                 {todo.name}
               </Text>
-              {/*{isToday && (
-                <Badge
-                  size={8}
-                  style={{ backgroundColor: theme.colors.primary }}
-                />
-              )}*/}
             </View>
           }
           subtitle={createdAtDate.toLocaleDateString('pt-BR')}
@@ -67,10 +61,17 @@ export const SingleTodoItem = ({
           >
             {todo.description}
           </Text>
+          <Text
+            variant="headlineMedium"
+            style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}
+          >
+            Sugestões
+          </Text>
           {todo.suggestions && todo.suggestions.map((suggestion) => (
+
             <Text
               variant="bodyMedium"
-              style={{ color: theme.colors.onSurfaceVariant }}
+              style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}
             >
               {suggestion.suggestion}
             </Text>
