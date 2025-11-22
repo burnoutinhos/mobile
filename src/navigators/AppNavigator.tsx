@@ -9,7 +9,7 @@ import CustomNavigationBar from "../components/Appbar";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import UserScreen from "../screens/User/UserScreen";
 import { HomeNavigator } from "./HomeNavigator";
-import { CronometerScreen } from "../screens/Cronometer";
+import { CronometerScreen } from "../screens/Cronometer/Cronometer";
 import { ITodo } from "../model/todo/todo";
 import TodoScreen from "../screens/Todo/TodoScreen";
 import TodoPage from "../screens/Todo/subpages/TodoPage";

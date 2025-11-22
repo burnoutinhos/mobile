@@ -1,6 +1,7 @@
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { StyleSheet, View, ScrollView } from "react-native";
+import { Button, Text, Card, Avatar, useTheme } from "react-native-paper";
 import { usePreferences } from "../context/ThemeProvider";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { AppParamList } from "../navigators/AppNavigator";
@@ -8,42 +9,76 @@ import { useAuth } from "../context/AuthProvider";
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<AppParamList>>();
-
   const { logout } = useAuth();
-
   const { theme } = usePreferences();
+
   return (
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: theme.colors.background, gap: 16 },
+        { backgroundColor: theme.colors.background },
       ]}
     >
-      <Text theme={theme} style={[styles.title]}>
-        Home
-      </Text>
-      <Button
-        mode="contained"
-        onPress={() => navigation.navigate("Cronometer")}
-        style={styles.button}
-      >
-        Cronômetro
-      </Button>
-      <Button
-        mode="contained"
-        onPress={() => navigation.navigate("Todo")}
-        style={styles.button}
-      >
-        Ver Todos
-      </Button>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <Text variant="headlineMedium" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
+            Bem-vindo!
+          </Text>
+          <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
+            O que você gostaria de fazer hoje?
+          </Text>
+        </View>
 
-      <Button
-        mode="contained"
-        onPress={logout}
-        style={styles.button}
-      >
-        Deslogar
-      </Button>
+        <View style={styles.grid}>
+          <Card
+            style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]}
+            onPress={() => navigation.navigate("Cronometer")}
+            mode="elevated"
+          >
+            <Card.Content style={styles.cardContent}>
+              <Avatar.Icon 
+                size={56} 
+                icon="timer-outline" 
+                style={{ backgroundColor: theme.colors.primaryContainer }} 
+                color={theme.colors.onPrimaryContainer} 
+              />
+              <Text variant="titleMedium" style={[styles.cardTitle, { color: theme.colors.onSurfaceVariant }]}>
+                Cronômetro
+              </Text>
+            </Card.Content>
+          </Card>
+
+          <Card
+            style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]}
+            onPress={() => navigation.navigate("Todo")}
+            mode="elevated"
+          >
+            <Card.Content style={styles.cardContent}>
+              <Avatar.Icon 
+                size={56} 
+                icon="format-list-checks" 
+                style={{ backgroundColor: theme.colors.secondaryContainer }} 
+                color={theme.colors.onSecondaryContainer} 
+              />
+              <Text variant="titleMedium" style={[styles.cardTitle, { color: theme.colors.onSurfaceVariant }]}>
+                Tarefas
+              </Text>
+            </Card.Content>
+          </Card>
+        </View>
+
+        <View style={styles.footer}>
+          <Button
+            mode="outlined"
+            onPress={() => navigation.navigate("User")}
+            icon="account-box"
+            style={styles.logoutButton}
+            textColor={theme.colors.primary}
+          >
+            Ver perfil
+          </Button>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -51,20 +86,43 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "600",
+  scrollContent: {
+    padding: 24,
+    flexGrow: 1,
+  },
+  header: {
+    marginBottom: 40,
+    marginTop: 16,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    justifyContent: 'space-between',
+  },
+  card: {
+    width: '47%',
     marginBottom: 16,
   },
-  button: {
-    alignSelf: "stretch",
-    borderRadius: 8,
-    paddingVertical: 6,
+  cardContent: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    gap: 16,
   },
+  cardTitle: {
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  footer: {
+    marginTop: 'auto',
+    paddingTop: 40,
+    alignItems: 'center',
+  },
+  logoutButton: {
+    borderColor: 'transparent',
+    width: '100%',
+  }
 });
 
 export default HomeScreen;
