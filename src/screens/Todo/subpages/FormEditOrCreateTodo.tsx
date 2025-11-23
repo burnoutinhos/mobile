@@ -1,9 +1,5 @@
 import { Formik } from "formik";
-import {
-  emptyTodoForm,
-  getTodoSchema,
-  TodoType,
-} from "../../../model/todo/TodoTypes";
+import { emptyTodoForm, getTodoSchema } from "../../../model/todo/TodoTypes";
 import { usePreferences } from "../../../context/ThemeProvider";
 import { ITodo } from "../../../model/todo/todo";
 import {
