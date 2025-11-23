@@ -11,6 +11,7 @@ import {
   Divider,
   Banner,
 } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import ConfirmPasswordToEdit from "../components/ConfirmPasswordToEdit";
 import { IUser } from "../../../model/user/user";
 import { UserType, UserEditSchema } from "../../../model/user/UserTypes";
@@ -21,6 +22,7 @@ interface FormProps {
 }
 
 export default function FormEditUser({ user }: FormProps) {
+  const { t } = useTranslation();
   const {
     formikRef,
     update,
@@ -61,7 +63,7 @@ export default function FormEditUser({ user }: FormProps) {
             elevation={1}
           >
             <Card.Title
-              title="Informações do Perfil"
+              title={t("user.profileInfo")}
               titleVariant="titleLarge"
               titleStyle={{ color: theme.colors.onSurface, fontWeight: "700" }}
               left={(props) => (
@@ -80,12 +82,12 @@ export default function FormEditUser({ user }: FormProps) {
                   variant="labelLarge"
                   style={[styles.label, { color: theme.colors.onSurface }]}
                 >
-                  Nome
+                  {t("user.name")}
                 </Text>
                 <TextInput
                   onChangeText={handleChange("name")}
                   onBlur={handleBlur("name")}
-                  placeholder="Digite seu nome"
+                  placeholder={t("user.namePlaceholder")}
                   value={values.name}
                   mode="outlined"
                   disabled={!update}
@@ -118,12 +120,12 @@ export default function FormEditUser({ user }: FormProps) {
                   variant="labelLarge"
                   style={[styles.label, { color: theme.colors.onSurface }]}
                 >
-                  Email
+                  {t("user.email")}
                 </Text>
                 <TextInput
                   onChangeText={handleChange("email")}
                   onBlur={handleBlur("email")}
-                  placeholder="Digite seu email"
+                  placeholder={t("user.emailPlaceholder")}
                   value={values.email}
                   mode="outlined"
                   disabled={!update}
@@ -160,12 +162,12 @@ export default function FormEditUser({ user }: FormProps) {
                       variant="labelLarge"
                       style={[styles.label, { color: theme.colors.onSurface }]}
                     >
-                      Nova Senha
+                      {t("user.newPassword")}
                     </Text>
                     <TextInput
                       onChangeText={handleChange("password")}
                       onBlur={handleBlur("password")}
-                      placeholder="Digite sua nova senha"
+                      placeholder={t("user.newPasswordPlaceholder")}
                       value={values.password}
                       mode="outlined"
                       disabled={!update}
@@ -208,12 +210,12 @@ export default function FormEditUser({ user }: FormProps) {
                       variant="labelLarge"
                       style={[styles.label, { color: theme.colors.onSurface }]}
                     >
-                      Confirmar Senha
+                      {t("user.confirmPassword")}
                     </Text>
                     <TextInput
                       onChangeText={handleChange("confirmPassword")}
                       onBlur={handleBlur("confirmPassword")}
-                      placeholder="Confirme sua senha"
+                      placeholder={t("user.confirmPasswordPlaceholder")}
                       value={values.confirmPassword}
                       mode="outlined"
                       disabled={!update}
@@ -270,7 +272,7 @@ export default function FormEditUser({ user }: FormProps) {
                       loading={isPending}
                       disabled={isPending}
                     >
-                      Salvar
+                      {t("user.save")}
                     </Button>
                     <Button
                       mode="outlined"
@@ -285,7 +287,7 @@ export default function FormEditUser({ user }: FormProps) {
                       icon="close"
                       disabled={isPending}
                     >
-                      Cancelar
+                      {t("user.cancel")}
                     </Button>
                   </>
                 ) : (
@@ -299,7 +301,7 @@ export default function FormEditUser({ user }: FormProps) {
                     contentStyle={styles.buttonContent}
                     icon="pencil"
                   >
-                    Editar Perfil
+                    {t("user.editProfile")}
                   </Button>
                 )}
               </View>
@@ -321,7 +323,7 @@ export default function FormEditUser({ user }: FormProps) {
                     variant="bodyMedium"
                     style={{ color: theme.colors.onSurface, marginTop: 8 }}
                   >
-                    Atualizando perfil...
+                    {t("user.updating")}
                   </Text>
                 </View>
               )}
@@ -354,7 +356,7 @@ export default function FormEditUser({ user }: FormProps) {
               visible={!!error}
               actions={[
                 {
-                  label: "Fechar",
+                  label: t("user.cancel"),
                   onPress: () => reset(),
                 },
               ]}

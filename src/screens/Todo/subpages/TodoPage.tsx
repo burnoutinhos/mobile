@@ -1,51 +1,31 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context"
-import { AppParamList } from "../../../navigators/AppNavigator";
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { usePreferences } from "../../../context/ThemeProvider";
-import { Text } from "react-native-paper";
+import { AppParamList } from "../../../navigators/AppNavigator";
 import FormEditOrCreateTodo from "./FormEditOrCreateTodo";
 
-
 const TodoPage = () => {
-
-  const route = useRoute<RouteProp<AppParamList,"TodoPage">>()
+  const route = useRoute<RouteProp<AppParamList, "TodoPage">>();
 
   const { theme } = usePreferences();
 
-  const todo = route.params.todo
+  const todo = route.params.todo;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView
-              contentContainerStyle={{
-                padding: 16,
-                gap: 16,
-              }}
-              showsVerticalScrollIndicator={false}
-            >
-              <Text
-                variant="headlineMedium"
-                style={{
-                  color: theme.colors.onBackground,
-                  fontWeight: "600",
-                  marginBottom: 8,
-                }}
-              >
-                Editar Tarefa
-              </Text>
-
-              <View style={{ width: "100%" }}>
-                <FormEditOrCreateTodo todo={todo} />
-              </View>
-            </ScrollView>
-    </SafeAreaView>
-  )
-}
+        contentContainerStyle={{}}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={{ width: "100%" }}>
+          <FormEditOrCreateTodo todo={todo} />
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

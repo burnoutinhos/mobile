@@ -7,8 +7,10 @@ import { TodoFooter } from "./components/TodoFooter";
 import { TodoHeader } from "./components/TodoHeader";
 import { TodosNotFound } from "./components/TodosNotFound";
 import { useTodo } from "./controllers/TodoController";
+import { useTranslation } from "react-i18next";
 
 const TodoScreen = () => {
+  const { t } = useTranslation();
   const { theme } = usePreferences();
 
   const {
@@ -69,7 +71,7 @@ const TodoScreen = () => {
           {
             icon: "plus",
             onPress: handleCreateTodo,
-            label: "Adicione uma tarefa",
+            label: t("todo.addTask"),
           },
         ]}
       />

@@ -15,8 +15,10 @@ import { usePreferences } from "../../../context/ThemeProvider";
 import { MaxMinutesModal } from "../components/MaxMinutesModal";
 import { CustomModal } from "../../../components/Modal";
 import { useCronometer } from "../controllers/CronometerController";
+import { useTranslation } from "react-i18next";
 
 export const CronometerScreen = () => {
+  const { t } = useTranslation();
   const { theme } = usePreferences();
 
   const {
@@ -68,7 +70,7 @@ export const CronometerScreen = () => {
               textAlign: "center",
             }}
           >
-            {timeblock ? "Continuar Registro" : "Cronômetro"}
+            {timeblock ? t("cronometer.continueRecord") : t("cronometer.title")}
           </Text>
           <Text
             variant="bodyLarge"
@@ -78,8 +80,8 @@ export const CronometerScreen = () => {
             }}
           >
             {timeblock
-              ? "Continue de onde você parou"
-              : "Gerencie seu tempo com foco"}
+              ? t("cronometer.continueSubtitle")
+              : t("cronometer.subtitle")}
           </Text>
         </View>
 
@@ -92,11 +94,11 @@ export const CronometerScreen = () => {
           <Card.Content style={styles.timerCardContent}>
             <View style={styles.nameInputContainer}>
               <TextInput
-                label="Nome do registro"
+                label={t("cronometer.recordName")}
                 value={recordName}
                 onChangeText={setRecordName}
                 mode="outlined"
-                placeholder="Ex: Estudo de React"
+                placeholder={t("cronometer.recordNamePlaceholder")}
                 style={[
                   styles.nameInput,
                   {
@@ -114,7 +116,7 @@ export const CronometerScreen = () => {
                 style={{ color: theme.colors.onSurfaceVariant }}
                 visible={!recordName && !isRunning}
               >
-                Dê um nome para identificar este registro
+                {t("cronometer.recordNameHelper")}
               </HelperText>
             </View>
 
@@ -133,7 +135,7 @@ export const CronometerScreen = () => {
                 variant="labelLarge"
                 style={{ color: theme.colors.outline }}
               >
-                Tempo decorrido
+                {t("cronometer.timeElapsed")}
               </Text>
             </View>
 
@@ -148,7 +150,8 @@ export const CronometerScreen = () => {
                   variant="bodySmall"
                   style={{ color: theme.colors.onSurfaceVariant }}
                 >
-                  Meta: {maxMinutes} min
+                  {t("cronometer.goal")}: {maxMinutes}{" "}
+                  {t("cronometer.goalMinutes")}
                 </Text>
                 <Text
                   variant="bodySmall"
@@ -162,7 +165,10 @@ export const CronometerScreen = () => {
                 icon="watch-import"
                 onPress={() => setVisible(true)}
               >
-                {maxMinutes !== 0 ? "Mudar" : "Definir"} meta
+                {maxMinutes !== 0
+                  ? t("cronometer.changeGoal")
+                  : t("cronometer.setGoal")}{" "}
+                {t("cronometer.goalLabel")}
               </Button>
             </View>
 
@@ -181,7 +187,7 @@ export const CronometerScreen = () => {
                   style={styles.mainButton}
                   contentStyle={styles.buttonContent}
                 >
-                  Iniciar
+                  {t("cronometer.start")}
                 </Button>
               ) : (
                 <Button
@@ -193,7 +199,7 @@ export const CronometerScreen = () => {
                   style={styles.mainButton}
                   contentStyle={styles.buttonContent}
                 >
-                  Pausar
+                  {t("cronometer.pause")}
                 </Button>
               )}
 
@@ -204,7 +210,7 @@ export const CronometerScreen = () => {
                 disabled={elapsedSeconds === 0}
                 style={styles.resetButton}
               >
-                Reiniciar
+                {t("cronometer.restart")}
               </Button>
 
               <Button
@@ -225,14 +231,14 @@ export const CronometerScreen = () => {
                 }
                 loading={isPending}
               >
-                {showSaveSuccess ? "Salvo!" : "Salvar"}
+                {showSaveSuccess ? t("cronometer.saved") : t("cronometer.save")}
               </Button>
 
               <Button
                 mode="contained"
                 onPress={handleDelete}
                 icon="delete-alert"
-                disabled={isPending || maxMinutes === 0}
+                disabled={isPending || maxMinutes === 0 || !timeblock?.id}
                 style={[
                   styles.saveButton,
                   {
@@ -242,21 +248,9 @@ export const CronometerScreen = () => {
                 textColor={theme.colors.onErrorContainer}
                 loading={isPending}
               >
-                Deletar registro
+                {t("cronometer.deleteRecord")}
               </Button>
             </View>
-
-            {isPending && (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={theme.colors.primary} />
-                <Text
-                  variant="bodySmall"
-                  style={{ color: theme.colors.onSurfaceVariant }}
-                >
-                  Salvando progresso...
-                </Text>
-              </View>
-            )}
 
             {error && (
               <Card
@@ -269,7 +263,7 @@ export const CronometerScreen = () => {
                   <Text style={{ color: theme.colors.onErrorContainer }}>
                     {error.response?.data?.message ||
                       error.message ||
-                      "Erro ao salvar o timeblock"}
+                      t("cronometer.errorSaving")}
                   </Text>
                 </Card.Content>
               </Card>
@@ -295,12 +289,13 @@ export const CronometerScreen = () => {
       />
 
       <CustomModal
-        title="Confirmar exclusão?"
+        title={t("cronometer.confirmDelete")}
         onDismiss={() => setDeleteModalVisible(false)}
         visible={deleteModalVisible}
+        i18nIsDynamicList
         actions={[
           {
-            label: "Deletar",
+            label: t("cronometer.delete"),
             icon: "delete",
             onPress: mutateDelete,
           },

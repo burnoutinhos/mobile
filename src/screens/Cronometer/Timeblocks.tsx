@@ -18,8 +18,10 @@ import { PageableResponse } from "../../model/types";
 import { useState } from "react";
 import { endpoints } from "../../services/api/endpoints";
 import { useTimeblock } from "./controllers/TimeblockController";
+import { useTranslation } from "react-i18next";
 
 const Timeblocks = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<AppParamList>>();
   const { theme } = usePreferences();
 
@@ -45,7 +47,7 @@ const Timeblocks = () => {
             variant="bodyLarge"
             style={{ color: theme.colors.onSurface, marginTop: 16 }}
           >
-            Carregando registros...
+            {t("cronometer.loadingRecords")}
           </Text>
         </View>
       </SafeAreaView>
@@ -93,7 +95,7 @@ const Timeblocks = () => {
         visible={true}
         actions={[
           {
-            label: "Add Time Block",
+            label: t("cronometer.addTimeBlock"),
             icon: "plus",
             onPress: () => navigation.navigate("Cronometer"),
           },

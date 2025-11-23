@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  Pressable,
   TouchableOpacity,
 } from "react-native";
 import {
@@ -12,16 +11,18 @@ import {
   Text,
   Card,
   Avatar,
-  Surface,
   Divider,
   IconButton,
   Switch,
+  Button,
 } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { CustomModal } from "../../components/Modal";
 import FormEditUser from "./subpages/FormEditUser";
 import { useUser } from "./controllers/UserController";
 
 const UserScreen = () => {
+  const { t } = useTranslation();
   const {
     visible,
     setVisible,
@@ -36,7 +37,6 @@ const UserScreen = () => {
     languages,
     logout,
     handleLogout,
-    handleEditImage,
     changeLanguage,
     getInitial,
   } = useUser();
@@ -54,7 +54,7 @@ const UserScreen = () => {
           variant="bodyLarge"
           style={[styles.loadingText, { color: theme.colors.onBackground }]}
         >
-          Carregando perfil...
+          {t("user.loadingProfile")}
         </Text>
       </SafeAreaView>
     );
@@ -77,23 +77,19 @@ const UserScreen = () => {
           variant="headlineSmall"
           style={[styles.errorTitle, { color: theme.colors.error }]}
         >
-          Usuário não encontrado
+          {t("user.userNotFound")}
         </Text>
         <Text
           variant="bodyMedium"
           style={{ color: theme.colors.onBackground, textAlign: "center" }}
         >
-          Não foi possível carregar as informações do perfil.
+          {t("user.couldNotLoadProfile")}
         </Text>
       </SafeAreaView>
     );
   }
 
-  console.log(user);
-
   const initial = getInitial();
-
-  console.log(user.data.profileImage);
 
   return (
     <SafeAreaView
@@ -110,75 +106,48 @@ const UserScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Card do Perfil */}
+        {/* Header Card with Avatar and Info */}
         <Card
           style={[
-            styles.profileCard,
-            { backgroundColor: theme.colors.surface },
+            styles.headerCard,
+            { backgroundColor: theme.colors.surfaceVariant },
           ]}
-          elevation={2}
+          elevation={3}
         >
-          <Card.Content style={styles.profileCardContent}>
-            {/* Avatar com botões de ação */}
-            <View style={styles.avatarRow}>
-              {/* Botão Logout */}
-              <IconButton
-                icon="logout"
-                size={28}
-                iconColor={theme.colors.error}
-                containerColor={theme.colors.errorContainer}
-                onPress={handleLogout}
-                style={styles.actionButton}
-              />
-
-              {/* Avatar Central */}
-              <Surface
-                style={[
-                  styles.avatarContainer,
-                  { backgroundColor: theme.colors.surfaceVariant },
-                ]}
-                elevation={4}
-              >
-                {user.data.profileImage !== null ? (
-                  <Pressable onPress={handleEditImage}>
-                    <Avatar.Image
-                      source={{ uri: user.data.profileImage }}
-                      size={120}
-                    />
-                  </Pressable>
-                ) : (
-                  <Pressable onPress={handleEditImage}>
-                    <Avatar.Text
-                      size={120}
-                      label={initial}
-                      style={{
-                        backgroundColor: theme.colors.primaryContainer,
-                      }}
-                      labelStyle={{
-                        color: theme.colors.onPrimaryContainer,
-                        fontWeight: "700",
-                      }}
-                    />
-                  </Pressable>
-                )}
-              </Surface>
-
-              {/* Botão Editar Imagem */}
-              <IconButton
-                icon="image-edit-outline"
-                size={28}
-                iconColor={theme.colors.primary}
-                containerColor={theme.colors.primaryContainer}
-                onPress={handleEditImage}
-                style={styles.actionButton}
-              />
+          <Card.Content style={styles.headerContent}>
+            {/* Avatar */}
+            <View style={styles.avatarSection}>
+              {user.data.profileImage !== null ? (
+                <Avatar.Image
+                  source={{ uri: user.data.profileImage }}
+                  size={100}
+                  style={styles.avatar}
+                />
+              ) : (
+                <Avatar.Text
+                  size={100}
+                  label={initial}
+                  style={[
+                    styles.avatar,
+                    { backgroundColor: theme.colors.primary },
+                  ]}
+                  labelStyle={{
+                    color: theme.colors.onPrimary,
+                    fontWeight: "700",
+                    fontSize: 40,
+                  }}
+                />
+              )}
             </View>
 
-            {/* Nome e Email */}
-            <View style={styles.userInfoSection}>
+            {/* User Info */}
+            <View style={styles.userInfo}>
               <Text
                 variant="headlineMedium"
-                style={[styles.userName, { color: theme.colors.onSurface }]}
+                style={[
+                  styles.userName,
+                  { color: theme.colors.onPrimaryContainer },
+                ]}
               >
                 {user.data.name}
               </Text>
@@ -186,126 +155,165 @@ const UserScreen = () => {
                 variant="bodyLarge"
                 style={[
                   styles.userEmail,
-                  { color: theme.colors.onSurfaceVariant },
+                  { color: theme.colors.onPrimaryContainer },
                 ]}
               >
                 {user.data.email}
               </Text>
             </View>
 
-            <Divider style={styles.divider} />
+            {/* Logout Button */}
+            <Button
+              mode="contained-tonal"
+              onPress={handleLogout}
+              icon="logout"
+              style={styles.logoutButton}
+              buttonColor={theme.colors.errorContainer}
+              textColor={theme.colors.onErrorContainer}
+            >
+              {t("user.logout")}
+            </Button>
           </Card.Content>
         </Card>
 
-        {/* Formulário de Edição */}
+        {/* Form Section */}
         <View style={styles.formContainer}>
           <FormEditUser user={user.data} />
         </View>
 
-        {/* Language Selector */}
-        <View style={[styles.actionsSection, { marginBottom: 16 }]}>
-          <Text
-            style={[
-              styles.infoLabel,
-              { marginBottom: 12, color: theme.colors.onSurfaceVariant },
-            ]}
-          >
-            {/*{t("language")}*/}
-            Escolha sua língua
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-around",
-              gap: 8,
-            }}
-          >
-            {languages.map((lang) => (
-              <TouchableOpacity
-                key={lang.code}
-                onPress={() => changeLanguage(lang.code)}
-                style={{
-                  flex: 1,
-                  padding: 12,
-                  borderRadius: 8,
-                  backgroundColor:
-                    currentLanguage === lang.code
-                      ? theme.colors.primaryContainer
-                      : theme.colors.background,
-                  alignItems: "center",
-                  borderWidth: 2,
-                  borderColor:
-                    currentLanguage === lang.code
-                      ? theme.colors.primaryContainer
-                      : "transparent",
-                }}
-              >
-                <Text style={{ fontSize: 24, marginBottom: 4 }}>
-                  {lang.flag}
-                </Text>
-                <Text
-                  style={{
-                    color:
-                      currentLanguage === lang.code
-                        ? theme.colors.onPrimaryContainer
-                        : theme.colors.text,
-                    fontSize: 12,
-                    fontWeight:
-                      currentLanguage === lang.code ? "bold" : "normal",
-                  }}
-                >
-                  {lang.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Theme toggle */}
-        <View style={[styles.actionsSection, { marginBottom: 16 }]}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <View>
+        {/* Settings Section */}
+        <Card
+          style={[
+            styles.settingsCard,
+            { backgroundColor: theme.colors.surface },
+          ]}
+          elevation={1}
+        >
+          <Card.Content style={styles.settingsContent}>
+            <View style={styles.settingHeader}>
+              <IconButton
+                icon="cog"
+                size={24}
+                iconColor={theme.colors.primary}
+              />
               <Text
+                variant="titleLarge"
                 style={[
-                  styles.infoValue,
-                  { fontSize: 14, color: theme.colors.onSurfaceVariant },
+                  styles.settingsTitle,
+                  { color: theme.colors.onSurface },
                 ]}
               >
-                {/*{theme.dark
-                         ? t("settings.themeDark")
-                         : t("settings.themeLight")}*/}
-                Tema escuro
+                {t("user.settings")}
               </Text>
             </View>
-            <Switch
-              value={theme.dark}
-              onValueChange={toggleTheme}
-              trackColor={{
-                false: theme.colors.onSurfaceDisabled,
-                true: theme.colors.primary,
-              }}
-              thumbColor={theme.colors.inversePrimary}
-            />
-          </View>
-        </View>
 
+            <Divider style={styles.sectionDivider} />
+
+            {/* Language Selector */}
+            <View style={styles.settingSection}>
+              <Text
+                variant="titleMedium"
+                style={[styles.settingLabel, { color: theme.colors.onSurface }]}
+              >
+                {t("user.language")}
+              </Text>
+              <View style={styles.languageContainer}>
+                {languages.map((lang) => (
+                  <TouchableOpacity
+                    key={lang.code}
+                    onPress={() => changeLanguage(lang.code)}
+                    style={[
+                      styles.languageButton,
+                      {
+                        backgroundColor:
+                          currentLanguage === lang.code
+                            ? theme.colors.primaryContainer
+                            : theme.colors.surfaceVariant,
+                        borderColor:
+                          currentLanguage === lang.code
+                            ? theme.colors.primary
+                            : "transparent",
+                      },
+                    ]}
+                  >
+                    <Text style={styles.languageFlag}>{lang.flag}</Text>
+                    <Text
+                      style={[
+                        styles.languageName,
+                        {
+                          color:
+                            currentLanguage === lang.code
+                              ? theme.colors.onPrimaryContainer
+                              : theme.colors.onSurfaceVariant,
+                          fontWeight:
+                            currentLanguage === lang.code ? "700" : "400",
+                        },
+                      ]}
+                    >
+                      {lang.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <Divider style={styles.sectionDivider} />
+
+            {/* Theme Toggle */}
+            <View style={styles.settingSection}>
+              <View style={styles.themeRow}>
+                <View style={styles.themeInfo}>
+                  <IconButton
+                    icon={theme.dark ? "weather-night" : "weather-sunny"}
+                    size={24}
+                    iconColor={theme.colors.primary}
+                  />
+                  <View>
+                    <Text
+                      variant="titleMedium"
+                      style={[
+                        styles.themeLabel,
+                        { color: theme.colors.onSurface },
+                      ]}
+                    >
+                      {t("user.darkTheme")}
+                    </Text>
+                    <Text
+                      variant="bodySmall"
+                      style={{ color: theme.colors.onSurfaceVariant }}
+                    >
+                      {theme.dark ? t("user.enabled") : t("user.disabled")}
+                    </Text>
+                  </View>
+                </View>
+                <Switch
+                  value={theme.dark}
+                  onValueChange={toggleTheme}
+                  trackColor={{
+                    false: theme.colors.surfaceVariant,
+                    true: theme.colors.primary,
+                  }}
+                  thumbColor={theme.colors.surface}
+                />
+              </View>
+            </View>
+          </Card.Content>
+        </Card>
+
+        {/* Logout Modal */}
         <CustomModal
-          title="Deseja fazer logout?"
+          title={t("user.logoutConfirm")}
           onDismiss={() => setVisible(false)}
           visible={visible}
+          i18nIsDynamicList
           actions={[
             {
-              label: "Logout",
+              label: t("user.logout"),
+              icon: "logout",
               onPress: () => logout(),
             },
             {
-              label: "Cancelar",
+              label: t("user.cancel"),
               onPress: () => setVisible(false),
             },
           ]}
@@ -328,6 +336,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     gap: 16,
+    paddingBottom: 32,
   },
   loadingText: {
     marginTop: 16,
@@ -337,58 +346,113 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: "600",
   },
-  profileCard: {
-    borderRadius: 16,
+
+  // Header Card
+  headerCard: {
+    borderRadius: 20,
     overflow: "hidden",
   },
-  profileCardContent: {
-    alignItems: "center",
+  headerContent: {
     padding: 24,
-  },
-  avatarRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
     gap: 16,
-    marginBottom: 16,
   },
-  avatarContainer: {
-    borderRadius: 100,
-    overflow: "hidden",
-  },
-  actionButton: {
-    margin: 0,
-  },
-  userInfoSection: {
+  avatarSection: {
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 8,
+  },
+  avatar: {
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  userInfo: {
+    alignItems: "center",
+    gap: 4,
   },
   userName: {
     fontWeight: "700",
-    marginBottom: 4,
     textAlign: "center",
   },
   userEmail: {
     textAlign: "center",
+    opacity: 0.9,
   },
-  divider: {
-    width: "100%",
+  logoutButton: {
     marginTop: 8,
+    borderRadius: 12,
   },
+
+  // Form Container
   formContainer: {
     width: "100%",
   },
-  actionsSection: {
-    padding: 16,
-    backgroundColor: "transparent",
+
+  // Settings Card
+  settingsCard: {
+    borderRadius: 16,
+    overflow: "hidden",
   },
-  infoLabel: {
-    fontSize: 16,
+  settingsContent: {
+    padding: 20,
+  },
+  settingHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  settingsTitle: {
+    fontWeight: "700",
+  },
+  sectionDivider: {
+    marginVertical: 16,
+  },
+
+  // Settings Sections
+  settingSection: {
+    gap: 12,
+  },
+  settingLabel: {
     fontWeight: "600",
+    marginBottom: 4,
   },
-  infoValue: {
-    fontSize: 16,
-    width: "100%",
+
+  // Language Selector
+  languageContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  languageButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 2,
+    gap: 6,
+  },
+  languageFlag: {
+    fontSize: 28,
+  },
+  languageName: {
+    fontSize: 13,
+  },
+
+  // Theme Toggle
+  themeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  themeInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+  },
+  themeLabel: {
+    fontWeight: "600",
   },
 });
 

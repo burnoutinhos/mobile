@@ -1,16 +1,16 @@
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, View, ScrollView } from "react-native";
-import { Button, Text, Card, Avatar, useTheme } from "react-native-paper";
-import { usePreferences } from "../context/ThemeProvider";
+import { Button, Text, Card, Avatar } from "react-native-paper";
+import { useTranslation } from "react-i18next";
+import { usePreferences } from "../../context/ThemeProvider";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { AppParamList } from "../navigators/AppNavigator";
-import { useAuth } from "../context/AuthProvider";
+import { AppParamList } from "../../navigators/AppNavigator";
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<AppParamList>>();
-  const { logout } = useAuth();
   const { theme } = usePreferences();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView
@@ -22,13 +22,13 @@ const HomeScreen = () => {
             variant="headlineMedium"
             style={{ color: theme.colors.primary, fontWeight: "bold" }}
           >
-            Bem-vindo!
+            {t("home.welcome")}
           </Text>
           <Text
             variant="bodyLarge"
             style={{ color: theme.colors.onSurfaceVariant }}
           >
-            O que você gostaria de fazer hoje?
+            {t("home.subtitle")}
           </Text>
         </View>
 
@@ -55,7 +55,7 @@ const HomeScreen = () => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                Cronômetro
+                {t("home.chronometer")}
               </Text>
             </Card.Content>
           </Card>
@@ -82,7 +82,7 @@ const HomeScreen = () => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                Tarefas
+                {t("home.tasks")}
               </Text>
             </Card.Content>
           </Card>
@@ -96,7 +96,7 @@ const HomeScreen = () => {
             style={styles.logoutButton}
             textColor={theme.colors.primary}
           >
-            Ver perfil
+            {t("home.viewProfile")}
           </Button>
         </View>
       </ScrollView>

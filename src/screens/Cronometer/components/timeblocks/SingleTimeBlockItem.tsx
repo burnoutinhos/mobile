@@ -4,6 +4,7 @@ import { ITimeBlock } from "../../../../model/timeblocks/Timeblock";
 import { NavigationProp } from "@react-navigation/native";
 import { AppParamList } from "../../../../navigators/AppNavigator";
 import { MergedTheme } from "../../../../theme/types";
+import { useTranslation } from "react-i18next";
 
 interface SingleTimeBlockItemProps {
   item: ITimeBlock;
@@ -16,6 +17,8 @@ export const SingleTimeBlockItem = ({
   navigation,
   theme,
 }: SingleTimeBlockItemProps) => {
+  const { t } = useTranslation();
+
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -60,7 +63,7 @@ export const SingleTimeBlockItem = ({
                 }}
                 numberOfLines={1}
               >
-                {item.name || "Sem nome"}
+                {item.name || t("cronometer.noName")}
               </Text>
               <Chip
                 mode="flat"
@@ -79,7 +82,9 @@ export const SingleTimeBlockItem = ({
                   fontSize: 11,
                 }}
               >
-                {item.type === "CRONOMETER" ? "Cronômetro" : "Temporizador"}
+                {item.type === "CRONOMETER"
+                  ? t("cronometer.chronometer")
+                  : t("cronometer.timer")}
               </Chip>
             </View>
           }
@@ -104,7 +109,7 @@ export const SingleTimeBlockItem = ({
                   variant="bodySmall"
                   style={{ color: theme.colors.outline }}
                 >
-                  Tempo registrado
+                  {t("cronometer.timeRegistered")}
                 </Text>
                 <Text
                   variant="titleMedium"
@@ -133,7 +138,7 @@ export const SingleTimeBlockItem = ({
                   variant="bodySmall"
                   style={{ color: theme.colors.outline }}
                 >
-                  Meta
+                  {t("cronometer.goal")}
                 </Text>
                 <Text
                   variant="titleMedium"
@@ -142,7 +147,7 @@ export const SingleTimeBlockItem = ({
                     fontWeight: "bold",
                   }}
                 >
-                  {item.max} min
+                  {item.max} {t("cronometer.goalMinutes")}
                 </Text>
               </View>
             </View>
@@ -161,7 +166,7 @@ export const SingleTimeBlockItem = ({
                 style={{ color: theme.colors.onSurfaceVariant, flex: 1 }}
                 numberOfLines={1}
               >
-                Tarefa: {item.todo.name}
+                {t("cronometer.task")}: {item.todo.name}
               </Text>
             </View>
           )}

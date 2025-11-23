@@ -7,6 +7,7 @@ import {
 } from "../../../model/auth/ConfirmPassword";
 import { StyleSheet, View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { usePreferences } from "../../../context/ThemeProvider";
 import { endpoints } from "../../../services/api/endpoints";
 import { AxiosError, AxiosResponse } from "axios";
@@ -25,8 +26,9 @@ const ConfirmPasswordToEdit = ({
   confirmEditVisible,
   setConfirmEditVisible,
   setUpdate,
-  setFieldValue
+  setFieldValue,
 }: Props) => {
+  const { t } = useTranslation();
   const {
     isPending: isPasswordPending,
     isError: isPasswordError,
@@ -38,19 +40,18 @@ const ConfirmPasswordToEdit = ({
     ConfirmPasswordType
   >({
     mutationKey: [queryKeys.user.userPassword],
-    mutationFn: async ({ password }: ConfirmPasswordType) =>
-      {
-        await api.get(endpoints.user.verifyPassword, {
-          params: { password: password },
-        });
-        return {
-          password: password
-        } as ConfirmPasswordType;
-      },
+    mutationFn: async ({ password }: ConfirmPasswordType) => {
+      await api.get(endpoints.user.verifyPassword, {
+        params: { password: password },
+      });
+      return {
+        password: password,
+      } as ConfirmPasswordType;
+    },
     onSuccess: (data) => {
       setConfirmEditVisible(false);
-      setFieldValue('password', data.password);
-      setFieldValue('confirmPassword', data.password);
+      setFieldValue("password", data.password);
+      setFieldValue("confirmPassword", data.password);
       setUpdate(true);
     },
   });
@@ -59,20 +60,28 @@ const ConfirmPasswordToEdit = ({
 
   return (
     <CustomModal
-      title="Confirme sua senha"
+      title={t("user.confirmPasswordTitle")}
       visible={confirmEditVisible}
       onDismiss={() => setConfirmEditVisible(false)}
+      i18nIsDynamicList
       children={
         <Formik
           initialValues={{ password: "" }}
           onSubmit={(values) => {
-            confirmPassword(values)
+            confirmPassword(values);
             setConfirmEditVisible(false);
             setUpdate(true);
           }}
           validationSchema={ConfirmPasswordSchema}
         >
-          {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+          }) => (
             <View
               style={{
                 paddingHorizontal: 20,
@@ -82,15 +91,19 @@ const ConfirmPasswordToEdit = ({
               }}
             >
               <TextInput
-              label="Senha"
-              onChangeText={handleChange("password")}
-              onBlur={handleBlur("password")}
-              placeholder="Digite sua senha"
-              value={values.password}
-              mode="outlined"
-              error={!!(errors.password && touched.password)}
-              secureTextEntry
-              left={<TextInput.Icon icon="lock" />}
+                label={t("user.password")}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+                style={{
+                  backgroundColor: theme.colors.background,
+                }}
+                textColor={theme.colors.text}
+                placeholder={t("user.passwordPlaceholder")}
+                value={values.password}
+                mode="outlined"
+                error={!!(errors.password && touched.password)}
+                secureTextEntry
+                left={<TextInput.Icon icon="lock" />}
               />
 
               {errors.password && (
@@ -111,7 +124,7 @@ const ConfirmPasswordToEdit = ({
                 style={[styles.button]}
                 labelStyle={styles.buttonLabel}
               >
-                Confirmar
+                {t("user.confirm")}
               </Button>
             </View>
           )}

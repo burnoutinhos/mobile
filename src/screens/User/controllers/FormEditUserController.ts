@@ -11,6 +11,8 @@ import { UserType } from "../../../model/user/UserTypes";
 import api from "../../../services/api";
 import { endpoints } from "../../../services/api/endpoints";
 import { queryKeys } from "../../../services/api/query-keys";
+import * as ImagePicker from "expo-image-picker";
+import { Alert } from "react-native";
 
 export const useFormEditUser = (user: IUser) => {
   const { theme } = usePreferences();
@@ -18,24 +20,19 @@ export const useFormEditUser = (user: IUser) => {
 
   const [update, setUpdate] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const [confirmEditVisible, setConfirmEditVisible] = useState<boolean>(false);
 
   const { login } = useAuth();
 
-  const {
-    isPending,
-    error,
-    data,
-    mutate,
-    reset
-  } = useMutation<
+  const { isPending, error, data, mutate, reset } = useMutation<
     AxiosResponse<AuthResponse>,
     AxiosError<ErrorResponseDTO>,
-    Omit<UserType, 'confirmPassword'>
+    Omit<UserType, "confirmPassword">
   >({
     mutationKey: [queryKeys.user.user],
-    mutationFn: async (form: Omit<UserType, 'confirmPassword'>) =>
+    mutationFn: async (form: Omit<UserType, "confirmPassword">) =>
       await api.put(endpoints.user.update, form),
     onSuccess: (data) => {
       login(data.data.token);
@@ -54,7 +51,7 @@ export const useFormEditUser = (user: IUser) => {
     };
 
     // Adiciona password apenas se foi preenchido
-    if (values.password && values.password.trim() !== '') {
+    if (values.password && values.password.trim() !== "") {
       payload.password = values.password;
     }
 

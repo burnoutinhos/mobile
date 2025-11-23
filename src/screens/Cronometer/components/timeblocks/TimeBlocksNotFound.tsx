@@ -1,12 +1,15 @@
 import { View, StyleSheet } from "react-native";
 import { Text, IconButton } from "react-native-paper";
 import { MergedTheme } from "../../../../theme/types";
+import { useTranslation } from "react-i18next";
 
 interface TimeBlocksNotFoundProps {
   theme: MergedTheme;
 }
 
 export const TimeBlocksNotFound = ({ theme }: TimeBlocksNotFoundProps) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.empty}>
       <IconButton
@@ -18,7 +21,7 @@ export const TimeBlocksNotFound = ({ theme }: TimeBlocksNotFoundProps) => {
         variant="titleMedium"
         style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}
       >
-        Nenhum registro encontrado
+        {t("cronometer.noRecordsFound")}
       </Text>
       <Text
         variant="bodyMedium"
@@ -28,7 +31,7 @@ export const TimeBlocksNotFound = ({ theme }: TimeBlocksNotFoundProps) => {
           textAlign: "center",
         }}
       >
-        Seus registros de tempo aparecerão aqui
+        {t("cronometer.noRecordsDescription")}
       </Text>
     </View>
   );

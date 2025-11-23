@@ -1,15 +1,25 @@
-import { useRoute, RouteProp } from "@react-navigation/native";
-import { useMutation } from "@tanstack/react-query";
+import {
+  useRoute,
+  RouteProp,
+  useNavigation,
+  NavigationProp,
+} from "@react-navigation/native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosResponse, AxiosError } from "axios";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ITimeBlock, TimeBlockDto } from "../../../model/timeblocks/Timeblock";
 import { ErrorResponseDTO } from "../../../model/types";
 import { AppParamList } from "../../../navigators/AppNavigator";
 import api from "../../../services/api";
 import { endpoints } from "../../../services/api/endpoints";
+import { queryKeys } from "../../../services/api/query-keys";
 
 export const useCronometer = (theme: any) => {
+  const { t } = useTranslation();
   const route = useRoute<RouteProp<AppParamList, "Cronometer">>();
+  const navigation = useNavigation<NavigationProp<AppParamList>>();
+  const queryClient = useQueryClient();
   const timeblock = route.params?.timeblock;
 
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(
@@ -83,15 +93,16 @@ export const useCronometer = (theme: any) => {
       return await api.delete(endpoints.timeblock.delete(id));
     },
     onSuccess: () => {
-      setDeleteModalVisible(true);
+      // Fecha o modal de deleção
+      setDeleteModalVisible(false);
 
-      if (saveSuccessTimeoutRef.current !== null) {
-        clearTimeout(saveSuccessTimeoutRef.current);
-      }
+      // Invalida a query de timeblocks para atualizar a lista
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.timeblock.findAll],
+      });
 
-      saveSuccessTimeoutRef.current = setTimeout(() => {
-        setShowSaveSuccess(false);
-      }, 3000) as unknown as number;
+      // Navega de volta para a tela de Timeblocks
+      navigation.goBack();
     },
   });
 
@@ -113,7 +124,7 @@ export const useCronometer = (theme: any) => {
         } else {
           updateMutation.mutate({ id: timeBlockId, data: timeBlockData });
         }
-      }, 60000) as unknown as number; // 60000ms = 1 minuto
+      }, 2000) as unknown as number; // 60000ms = 1 minuto
     }
 
     if (!isRunning && saveIntervalRef.current !== null) {
@@ -221,20 +232,20 @@ export const useCronometer = (theme: any) => {
     () => [
       {
         icon: "plus",
-        label: "Adicionar 1 min",
+        label: t("cronometer.addOneMinute"),
         onPress: addAMinute,
         style: { backgroundColor: theme.colors.primaryContainer },
         color: theme.colors.onPrimaryContainer,
       },
       {
         icon: "minus",
-        label: "Remover 1 min",
+        label: t("cronometer.removeOneMinute"),
         onPress: subtractAMinute,
         style: { backgroundColor: theme.colors.errorContainer },
         color: theme.colors.onErrorContainer,
       },
     ],
-    [theme, addAMinute, subtractAMinute],
+    [theme, addAMinute, subtractAMinute, t],
   );
 
   return {

@@ -1,6 +1,7 @@
 export const queryKeys = {
   notification: {
     findAll: "notifications",
+    delete: "notificationDelete",
     single: "notification",
   },
   auth: {

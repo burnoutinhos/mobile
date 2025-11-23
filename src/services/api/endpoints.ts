@@ -5,6 +5,8 @@ export const endpoints = {
   },
   notification: {
     findAll: "/notifications",
+    findMe: "/notifications/me",
+    delete: (id: number) => `/notifications/${id}`,
   },
   user: {
     update: "/users",

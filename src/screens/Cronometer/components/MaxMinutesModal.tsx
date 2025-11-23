@@ -13,7 +13,8 @@ import { AxiosError, AxiosResponse } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { queryKeys } from "../../../services/api/query-keys";
 import api from "../../../services/api";
-import { MaxMinutesSchema } from "../../../model/timeblocks/Timeblock";
+import { getMaxMinutesSchema } from "../../../model/timeblocks/Timeblock";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   setMaxMinutes: (minutes: number) => void;
@@ -26,22 +27,24 @@ export const MaxMinutesModal = ({
   setVisible,
   setMaxMinutes,
 }: Props) => {
+  const { t } = useTranslation();
   const { theme } = usePreferences();
 
   return (
     <CustomModal
-      title="Qual é o tempo máximo em minutos?"
+      title={t("cronometer.maxTimeQuestion")}
       visible={visible}
       onDismiss={() => setVisible(false)}
+      i18nIsDynamicList
       children={
         <Formik
           initialValues={{ max: 0 }}
           onSubmit={(values) => {
             console.log("skamdkasmkldmask");
             setMaxMinutes(values.max);
-            setVisible(false)
+            setVisible(false);
           }}
-          validationSchema={MaxMinutesSchema}
+          validationSchema={getMaxMinutesSchema(t)}
         >
           {({
             handleChange,
@@ -60,10 +63,10 @@ export const MaxMinutesModal = ({
               }}
             >
               <TextInput
-                label="Tempo máximo"
+                label={t("cronometer.maxTimeLabel")}
                 onChangeText={handleChange("max")}
                 onBlur={handleBlur("max")}
-                placeholder="Digite sua senha"
+                placeholder={t("cronometer.maxTimePlaceholder")}
                 value={values.max.toString()}
                 mode="outlined"
                 error={!!(errors.max && touched.max)}
@@ -89,7 +92,7 @@ export const MaxMinutesModal = ({
                 style={[styles.button]}
                 labelStyle={styles.buttonLabel}
               >
-                Confirmar
+                {t("cronometer.confirm")}
               </Button>
             </View>
           )}

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { FormikProps } from "formik";
 import { ITodo } from "../../../model/todo/todo";
@@ -11,9 +11,12 @@ import api from "../../../services/api";
 import { endpoints } from "../../../services/api/endpoints";
 import { queryKeys } from "../../../services/api/query-keys";
 import { EnumTypeTodo } from "../../../services/Enums";
+import { useTranslation } from "react-i18next";
 
 export const useFormEditOrCreateTodo = (todo?: ITodo) => {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<AppParamList>>();
+  const queryClient = useQueryClient();
   const formikRef = useRef<FormikProps<TodoType> | null>(null);
 
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -23,12 +26,16 @@ export const useFormEditOrCreateTodo = (todo?: ITodo) => {
 
   const typeOptions = [
     {
-      label: "Tarefa",
+      label: t("todo.typeTask"),
       value: EnumTypeTodo.TODO,
       icon: "checkbox-marked-circle",
     },
-    { label: "Modo Foco", value: EnumTypeTodo.FOCUS_MODE, icon: "brain" },
-    { label: "Descanso", value: EnumTypeTodo.REST, icon: "coffee" },
+    {
+      label: t("todo.typeFocusMode"),
+      value: EnumTypeTodo.FOCUS_MODE,
+      icon: "brain",
+    },
+    { label: t("todo.typeRest"), value: EnumTypeTodo.REST, icon: "coffee" },
   ];
 
   // Mutation para atualizar (PUT)
@@ -73,6 +80,15 @@ export const useFormEditOrCreateTodo = (todo?: ITodo) => {
     mutationFn: async (todoId: number) =>
       await api.delete(endpoints.todo.delete + `/${todoId}`),
     onSuccess: () => {
+      // Fecha o modal de deleção
+      setDeleteModalVisible(false);
+
+      // Invalida a query de todos para atualizar a lista
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.todo.findAll],
+      });
+
+      // Navega de volta para a tela de Todos
       navigation.goBack();
     },
   });

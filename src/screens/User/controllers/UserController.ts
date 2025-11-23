@@ -55,19 +55,11 @@ export const useUser = () => {
   const changeLanguage = async (lang: string) => {
     await i18n.changeLanguage(lang);
     await AsyncStorage.setItem("language", lang);
-
-    // await new ProfileService(authToken).saveLanguagePreference(
-    //   translateToExpectedSpringEnums(lang),
-    // );
     setCurrentLanguage(lang);
   };
 
   const handleLogout = () => {
     setVisible(true);
-  };
-
-  const handleEditImage = () => {
-    console.log("Editar imagem");
   };
 
   const getInitial = () => {
@@ -100,7 +92,6 @@ export const useUser = () => {
     // Actions
     logout,
     handleLogout,
-    handleEditImage,
     changeLanguage,
     getInitial,
     translateToExpectedSpringEnums,

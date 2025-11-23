@@ -1,7 +1,7 @@
 import { Formik } from "formik";
 import {
   emptyTodoForm,
-  TodoSchema,
+  getTodoSchema,
   TodoType,
 } from "../../../model/todo/TodoTypes";
 import { usePreferences } from "../../../context/ThemeProvider";
@@ -16,7 +16,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
-  Banner,
   Button,
   Card,
   Divider,
@@ -26,11 +25,13 @@ import {
   Text,
   TextInput,
 } from "react-native-paper";
-import DatePicker from "@dietime/react-native-date-picker";
 import { CustomModal } from "../../../components/Modal";
+import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { useFormEditOrCreateTodo } from "../controllers/FormEditOrCreateTodoController";
+import { useTranslation } from "react-i18next";
 
 const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
+  const { t } = useTranslation();
   const { theme } = usePreferences();
 
   const {
@@ -70,7 +71,7 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
             innerRef={formikRef}
             initialValues={todo ? { ...todo } : emptyTodoForm}
             onSubmit={handleSubmit}
-            validationSchema={TodoSchema}
+            validationSchema={getTodoSchema(t)}
           >
             {({
               handleChange,
@@ -82,68 +83,54 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
               setFieldValue,
             }) => (
               <View style={styles.formContainer}>
-                <Text
-                  variant="headlineMedium"
-                  style={[styles.title, { color: theme.colors.primary }]}
-                >
-                  {todo ? "Editar Tarefa" : "Nova Tarefa"}
-                </Text>
+                {/* Header */}
+                <View style={styles.header}>
+                  <Text
+                    variant="headlineMedium"
+                    style={{
+                      color: theme.colors.primary,
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    {todo ? t("todo.editTask") : t("todo.newTask")}
+                  </Text>
+                  <Text
+                    variant="bodyLarge"
+                    style={{
+                      color: theme.colors.onSurfaceVariant,
+                      textAlign: "center",
+                    }}
+                  >
+                    {todo ? t("todo.updateTaskInfo") : t("todo.fillTaskInfo")}
+                  </Text>
+                </View>
 
-                <Text
-                  variant="bodyLarge"
-                  style={[
-                    styles.subtitle,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
-                  {todo
-                    ? "Atualize as informações da sua tarefa"
-                    : "Preencha os dados para criar uma nova tarefa"}
-                </Text>
-
+                {/* Card Principal */}
                 <Card
                   style={[
                     styles.card,
-                    { backgroundColor: theme.colors.surface },
+                    { backgroundColor: theme.colors.surfaceVariant },
                   ]}
-                  elevation={2}
+                  elevation={4}
                 >
-                  <Card.Title
-                    title="Informações da Tarefa"
-                    titleVariant="titleLarge"
-                    titleStyle={{
-                      color: theme.colors.onSurface,
-                      fontWeight: "700",
-                    }}
-                    left={(props) => (
-                      <IconButton
-                        {...props}
-                        icon={todo ? "pencil" : "plus-circle"}
-                        iconColor={theme.colors.primary}
-                      />
-                    )}
-                  />
-                  <Divider />
                   <Card.Content style={styles.cardContent}>
                     {/* Campo Nome */}
                     <View style={styles.inputContainer}>
-                      <Text
-                        variant="labelLarge"
-                        style={[
-                          styles.label,
-                          { color: theme.colors.onSurface },
-                        ]}
-                      >
-                        Nome
-                      </Text>
                       <TextInput
+                        label={t("todo.name")}
                         onChangeText={handleChange("name")}
                         onBlur={handleBlur("name")}
-                        placeholder="Digite o nome da tarefa"
+                        placeholder={t("todo.namePlaceholder")}
                         value={values.name}
                         mode="outlined"
                         error={!!(errors.name && touched.name)}
-                        left={<TextInput.Icon icon="format-text" />}
+                        left={<TextInput.Icon icon="format-title" />}
+                        style={[
+                          styles.input,
+                          { backgroundColor: theme.colors.surface },
+                        ]}
+                        textColor={theme.colors.onSurface}
                       />
                       <HelperText
                         type="error"
@@ -155,34 +142,22 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
 
                     {/* Campo Descrição */}
                     <View style={styles.inputContainer}>
-                      <Text
-                        variant="labelLarge"
-                        style={[
-                          styles.label,
-                          { color: theme.colors.onSurface },
-                        ]}
-                      >
-                        Descrição
-                      </Text>
                       <TextInput
+                        label={t("todo.description")}
                         onChangeText={handleChange("description")}
                         onBlur={handleBlur("description")}
-                        placeholder="Digite a descrição"
+                        placeholder={t("todo.descriptionPlaceholder")}
                         value={values.description}
                         mode="outlined"
                         error={!!(errors.description && touched.description)}
-                        left={<TextInput.Icon icon="text" />}
-                        contentStyle={{
-                          justifyContent: "center",
-                          alignItems: "center",
-                          paddingVertical: 10,
-                        }}
-                        style={{
-                          paddingVertical: 10,
-                          justifyContent: "center",
-                        }}
+                        left={<TextInput.Icon icon="text-box-outline" />}
                         multiline
-                        numberOfLines={3}
+                        numberOfLines={4}
+                        style={[
+                          styles.textArea,
+                          { backgroundColor: theme.colors.surface },
+                        ]}
+                        textColor={theme.colors.onSurface}
                       />
                       <HelperText
                         type="error"
@@ -192,16 +167,19 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                       </HelperText>
                     </View>
 
+                    <Divider style={styles.divider} />
+
                     {/* Campo Tipo de Tarefa */}
                     <View style={styles.inputContainer}>
                       <Text
                         variant="labelLarge"
-                        style={[
-                          styles.label,
-                          { color: theme.colors.onSurface },
-                        ]}
+                        style={{
+                          color: theme.colors.onSurfaceVariant,
+                          marginBottom: 8,
+                          fontWeight: "600",
+                        }}
                       >
-                        Tipo de Tarefa
+                        {t("todo.taskType")}
                       </Text>
                       <Menu
                         visible={menuVisible}
@@ -220,7 +198,7 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                           >
                             {typeOptions.find(
                               (opt) => opt.value === values.type,
-                            )?.label || "Selecione o tipo"}
+                            )?.label || t("todo.selectType")}
                           </Button>
                         }
                       >
@@ -244,198 +222,222 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                       </HelperText>
                     </View>
 
-                    {/* Data de Início */}
-                    <View style={styles.inputContainer}>
-                      <Text
-                        variant="labelLarge"
-                        style={[
-                          styles.label,
-                          { color: theme.colors.onSurface },
-                        ]}
-                      >
-                        Data de Início
-                      </Text>
-                      <Button
-                        mode="outlined"
-                        onPress={() => setShowStartPicker(true)}
-                        style={styles.dateButton}
-                        contentStyle={styles.dateButtonContent}
-                        icon="calendar"
-                      >
-                        {values.start
-                          ? new Date(values.start).toLocaleDateString("pt-BR")
-                          : "Selecione a data"}
-                      </Button>
-                      {showStartPicker && (
-                        <DatePicker
-                          value={
-                            values.start ? new Date(values.start) : new Date()
-                          }
-                          onChange={(date) => {
-                            setFieldValue("start", date);
-                            setShowStartPicker(false);
+                    <Divider style={styles.divider} />
+
+                    {/* Datas */}
+                    <View style={styles.datesContainer}>
+                      {/* Data de Início */}
+                      <View style={styles.dateInputContainer}>
+                        <Text
+                          variant="labelLarge"
+                          style={{
+                            color: theme.colors.onSurfaceVariant,
+                            marginBottom: 8,
+                            fontWeight: "600",
                           }}
-                        />
+                        >
+                          {t("todo.startDate")}
+                        </Text>
+                        <Button
+                          mode="contained"
+                          onPress={() => setShowStartPicker(true)}
+                          style={styles.dateButton}
+                          contentStyle={styles.dateButtonContent}
+                          icon="calendar-start"
+                          buttonColor={theme.colors.primaryContainer}
+                          textColor={theme.colors.onPrimaryContainer}
+                        >
+                          {values.start
+                            ? new Date(values.start).toLocaleDateString(
+                                "pt-BR",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                },
+                              )
+                            : t("todo.selectDate")}
+                        </Button>
+                        {showStartPicker && (
+                          <RNDateTimePicker
+                            value={
+                              values.start ? new Date(values.start) : new Date()
+                            }
+                            mode="date"
+                            display={
+                              Platform.OS === "ios" ? "spinner" : "default"
+                            }
+                            onChange={(event: any, date?: Date) => {
+                              setShowStartPicker(false);
+                              if (date) {
+                                setFieldValue("start", date);
+                              }
+                            }}
+                          />
+                        )}
+                        <HelperText
+                          type="error"
+                          visible={!!(errors.start && touched.start)}
+                        >
+                          {errors.start as string}
+                        </HelperText>
+                      </View>
+
+                      {/* Data de Término */}
+                      <View style={styles.dateInputContainer}>
+                        <Text
+                          variant="labelLarge"
+                          style={{
+                            color: theme.colors.onSurfaceVariant,
+                            marginBottom: 8,
+                            fontWeight: "600",
+                          }}
+                        >
+                          {t("todo.endDate")}
+                        </Text>
+                        <Button
+                          mode="contained"
+                          onPress={() => setShowEndPicker(true)}
+                          style={styles.dateButton}
+                          contentStyle={styles.dateButtonContent}
+                          icon="calendar-end"
+                          buttonColor={theme.colors.secondaryContainer}
+                          textColor={theme.colors.onSecondaryContainer}
+                        >
+                          {values.end
+                            ? new Date(values.end).toLocaleDateString("pt-BR", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : t("todo.selectDate")}
+                        </Button>
+                        {showEndPicker && (
+                          <RNDateTimePicker
+                            value={
+                              values.end ? new Date(values.end) : new Date()
+                            }
+                            mode="date"
+                            display={
+                              Platform.OS === "ios" ? "spinner" : "default"
+                            }
+                            onChange={(event: any, date?: Date) => {
+                              setShowEndPicker(false);
+                              if (date) {
+                                setFieldValue("end", date);
+                              }
+                            }}
+                          />
+                        )}
+                        <HelperText
+                          type="error"
+                          visible={!!(errors.end && touched.end)}
+                        >
+                          {errors.end as string}
+                        </HelperText>
+                      </View>
+                    </View>
+
+                    {/* Botões de Ação */}
+                    <View style={styles.controls}>
+                      <Button
+                        mode="contained"
+                        onPress={() => handleSubmit()}
+                        style={styles.mainButton}
+                        contentStyle={styles.buttonContent}
+                        icon={todo ? "check" : "plus"}
+                        loading={isPending}
+                        disabled={isPending}
+                      >
+                        {todo ? t("todo.updateTask") : t("todo.createTask")}
+                      </Button>
+
+                      {todo && (
+                        <Button
+                          mode="contained"
+                          onPress={() => handleDelete()}
+                          style={styles.deleteButton}
+                          contentStyle={styles.buttonContent}
+                          buttonColor={theme.colors.errorContainer}
+                          textColor={theme.colors.onErrorContainer}
+                          icon="delete-alert"
+                          loading={isPending}
+                          disabled={isPending}
+                        >
+                          {t("todo.deleteTask")}
+                        </Button>
                       )}
                     </View>
 
-                    {/* Data de Término */}
-                    <View style={styles.inputContainer}>
-                      <Text
-                        variant="labelLarge"
+                    {error && (
+                      <Card
                         style={[
-                          styles.label,
-                          { color: theme.colors.onSurface },
+                          styles.messageCard,
+                          { backgroundColor: theme.colors.errorContainer },
                         ]}
                       >
-                        Data de Término
-                      </Text>
-                      <Button
-                        mode="outlined"
-                        onPress={() => setShowEndPicker(true)}
-                        style={styles.dateButton}
-                        contentStyle={styles.dateButtonContent}
-                        icon="calendar"
+                        <Card.Content>
+                          <Text
+                            style={{ color: theme.colors.onErrorContainer }}
+                          >
+                            {error.message}
+                          </Text>
+                        </Card.Content>
+                      </Card>
+                    )}
+
+                    {data && (
+                      <Card
+                        style={[
+                          styles.messageCard,
+                          { backgroundColor: theme.colors.primaryContainer },
+                        ]}
                       >
-                        {values.end
-                          ? new Date(values.end).toLocaleDateString("pt-BR")
-                          : "Selecione a data"}
-                      </Button>
-                      {showEndPicker && (
-                        <DatePicker
-                          value={values.end ? new Date(values.end) : new Date()}
-                          onChange={(date) => {
-                            setFieldValue("end", date);
-                            setShowEndPicker(false);
-                          }}
-                        />
-                      )}
-                    </View>
+                        <Card.Content>
+                          <View style={styles.successMessage}>
+                            <IconButton
+                              icon="check-circle"
+                              iconColor={theme.colors.onPrimaryContainer}
+                              size={24}
+                              style={{ margin: 0 }}
+                            />
+                            <Text
+                              style={{
+                                color: theme.colors.onPrimaryContainer,
+                                flex: 1,
+                              }}
+                            >
+                              {todo
+                                ? t("todo.taskUpdatedSuccess")
+                                : t("todo.taskCreatedSuccess")}
+                            </Text>
+                          </View>
+                        </Card.Content>
+                      </Card>
+                    )}
                   </Card.Content>
                 </Card>
-
-                {/* Botão de Ação */}
-                <Button
-                  mode="contained"
-                  onPress={() => handleSubmit()}
-                  style={styles.button}
-                  contentStyle={styles.buttonContent}
-                  labelStyle={styles.buttonLabel}
-                  icon={todo ? "check" : "plus"}
-                  loading={isPending}
-                  disabled={isPending}
-                >
-                  {todo ? "Atualizar Tarefa" : "Criar Tarefa"}
-                </Button>
-
-                {/* Loading */}
-                {isPending && (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator
-                      size="large"
-                      color={theme.colors.primary}
-                    />
-                    <Text
-                      variant="bodyMedium"
-                      style={{ color: theme.colors.onSurface, marginTop: 8 }}
-                    >
-                      {todo ? "Atualizando tarefa..." : "Criando tarefa..."}
-                    </Text>
-                  </View>
-                )}
               </View>
             )}
           </Formik>
-          {todo ? (
-            <>
-              <Button
-                mode="contained"
-                onPress={() => handleDelete()}
-                style={styles.button}
-                buttonColor={theme.colors.error}
-                textColor={theme.colors.onError}
-                contentStyle={styles.buttonContent}
-                labelStyle={styles.buttonLabel}
-                icon={"delete-alert"}
-                loading={isPending}
-                disabled={isPending}
-              >
-                Deletar tarefa
-              </Button>
-              <CustomModal
-                title="Deletar Tarefa"
-                onDismiss={() => setDeleteModalVisible(false)}
-                visible={deleteModalVisible}
-                actions={[
-                  {
-                    label: "Apagar",
-                    onPress: handleConfirmDelete,
-                    icon: "delete-alert",
-                  },
-                ]}
-              />
-            </>
-          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Mensagem de Sucesso */}
-      {data && (
-        <Banner
-          visible={!!data}
-          actions={[
-            {
-              label: "OK",
-              onPress: () => {
-                resetUpdate();
-                resetCreate();
-              },
-            },
-          ]}
-          icon="check-circle"
-          style={{
-            backgroundColor: theme.colors.primaryContainer,
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          <Text style={{ color: theme.colors.onPrimaryContainer }}>
-            {todo
-              ? "Tarefa atualizada com sucesso!"
-              : "Tarefa criada com sucesso!"}
-          </Text>
-        </Banner>
-      )}
-
-      {/* Mensagem de Erro */}
-      {error && (
-        <Banner
-          visible={!!error}
-          actions={[
-            {
-              label: "Fechar",
-              onPress: () => {
-                resetUpdate();
-                resetCreate();
-              },
-            },
-          ]}
-          icon="alert-circle"
-          style={{
-            backgroundColor: theme.colors.errorContainer,
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          <Text style={{ color: theme.colors.onErrorContainer }}>
-            {error.message}
-          </Text>
-        </Banner>
-      )}
+      {/* Modal de Confirmação de Delete */}
+      <CustomModal
+        title={t("todo.deleteTaskTitle")}
+        onDismiss={() => setDeleteModalVisible(false)}
+        visible={deleteModalVisible}
+        i18nIsDynamicList
+        actions={[
+          {
+            label: t("todo.deleteButton"),
+            onPress: handleConfirmDelete,
+            icon: "delete-alert",
+            mode: "contained",
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 };
@@ -449,71 +451,86 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 16,
+    padding: 24,
   },
   formContainer: {
     flex: 1,
-    justifyContent: "center",
-    maxWidth: 500,
+    maxWidth: 600,
     width: "100%",
     alignSelf: "center",
   },
-  title: {
-    fontWeight: "bold",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    marginBottom: 24,
-    textAlign: "center",
+  header: {
+    marginBottom: 32,
+    marginTop: 8,
   },
   card: {
-    borderRadius: 16,
-    overflow: "hidden",
-    marginBottom: 16,
+    borderRadius: 24,
+    elevation: 4,
   },
   cardContent: {
-    paddingTop: 16,
-    gap: 8,
+    paddingVertical: 32,
+    gap: 16,
   },
   inputContainer: {
-    marginBottom: 12,
+    gap: 0,
   },
-  label: {
-    marginBottom: 6,
-    fontWeight: "600",
+  input: {
+    marginBottom: 0,
+  },
+  textArea: {
+    marginBottom: 0,
+    minHeight: 100,
+  },
+  divider: {
+    marginVertical: 8,
   },
   selectButton: {
-    justifyContent: "flex-start",
+    borderRadius: 12,
   },
   selectButtonContent: {
     height: 56,
     justifyContent: "flex-start",
   },
+  datesContainer: {
+    gap: 16,
+  },
+  dateInputContainer: {
+    gap: 0,
+  },
   dateButton: {
-    alignSelf: "stretch",
+    borderRadius: 12,
   },
   dateButtonContent: {
-    height: 56,
-    justifyContent: "flex-start",
+    paddingVertical: 8,
   },
-  button: {
-    marginTop: 8,
-    marginBottom: 8,
-    borderRadius: 8,
+  controls: {
+    gap: 12,
+    marginTop: 16,
+  },
+  mainButton: {
+    borderRadius: 12,
+  },
+  deleteButton: {
+    borderRadius: 12,
   },
   buttonContent: {
     paddingVertical: 8,
   },
-  buttonLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
   loadingContainer: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 16,
-    padding: 16,
+    gap: 12,
+    paddingVertical: 8,
+  },
+  messageCard: {
+    marginTop: 8,
+    borderRadius: 12,
+  },
+  successMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
 });
 
