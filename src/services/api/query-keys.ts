@@ -1,6 +1,7 @@
 export const queryKeys = {
   notification: {
     findAll: "notifications",
+    delete: "notificationDelete",
     single: "notification",
   },
   auth: {
@@ -9,10 +10,21 @@ export const queryKeys = {
   },
   user: {
     user: "user",
+    userPassword: "userPassword",
     userUpdate: "userUpdate",
   },
   todo: {
     findAll: "todos/me",
-    put: "todoUpdate"
-  }
+    me: "todos/me",
+    put: "todoUpdate",
+    create: "todoCreate",
+    delete: "todoDelete",
+  },
+  timeblock: {
+    findAll: "timeblocks",
+    single: "timeblock",
+    create: "timeblockCreate",
+    update: "timeblockUpdate",
+    delete: "timeblockDelete",
+  },
 };

@@ -1,15 +1,22 @@
 import * as yup from "yup";
 
-const LoginSchema = yup.object().shape({
-  email: yup.string().email("Email inválido").required("Email é obrigatório"),
-  password: yup.string().required("Senha é obrigatória"),
-});
+const getLoginSchema = (t: (key: string) => string) =>
+  yup.object().shape({
+    email: yup
+      .string()
+      .email(t("validation.emailInvalid"))
+      .required(t("validation.emailRequired")),
+    password: yup.string().required(t("validation.passwordRequired")),
+  });
 
-type LoginType = yup.InferType<typeof LoginSchema>;
+type LoginType = {
+  email: string;
+  password: string;
+};
 
 const emptyLoginForm: LoginType = {
   email: "",
   password: "",
 };
 
-export { LoginSchema, LoginType, emptyLoginForm };
+export { getLoginSchema, LoginType, emptyLoginForm };

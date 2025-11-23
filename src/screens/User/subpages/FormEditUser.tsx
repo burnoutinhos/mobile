@@ -1,12 +1,5 @@
-import { Formik, FormikProps } from "formik";
-import React, { useRef, useState } from "react";
-import { usePreferences } from "../context/ThemeProvider";
-import { UserSchema, UserType } from "../model/user/UserTypes";
-import { IUser } from "../model/user/user";
-import { useMutation } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
-import { endpoints } from "../services/api/endpoints";
-import api from "../services/api";
+import { Formik } from "formik";
+import React from "react";
 import { StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -18,59 +11,51 @@ import {
   Divider,
   Banner,
 } from "react-native-paper";
-import { queryKeys } from "../services/api/query-keys";
-import { ErrorResponseDTO } from "../model/types";
-import { AuthResponse } from "../model/auth/types";
-import { useAuth } from "../context/AuthProvider";
-import { CustomModal } from "./Modal";
-import { ConfirmPasswordSchema } from "../model/auth/ConfirmPassword";
-import ConfirmPasswordToEdit from "./ConfirmPasswordToEdit";
+import { useTranslation } from "react-i18next";
+import ConfirmPasswordToEdit from "../components/ConfirmPasswordToEdit";
+import { IUser } from "../../../model/user/user";
+import { UserType, UserEditSchema } from "../../../model/user/UserTypes";
+import { useFormEditUser } from "../controllers/FormEditUserController";
 
 interface FormProps {
   user: IUser;
 }
 
 export default function FormEditUser({ user }: FormProps) {
-  const { theme } = usePreferences();
-  const formikRef = useRef<FormikProps<UserType> | null>(null);
-  const [update, setUpdate] = useState<boolean>(false);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState<boolean>(false);
-
-  const [confirmEditVisible, setConfirmEditVisible] = useState<boolean>(false);
-
-  const { login } = useAuth();
-
-  let { isPending, error, data, mutate, reset } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ErrorResponseDTO>,
-    UserType
-  >({
-    mutationKey: [queryKeys.user.user],
-    mutationFn: async (form: UserType) =>
-      await api.put(endpoints.user.update, form),
-    onSuccess: (data) => {
-      login(data.data.token);
-      setUpdate(false);
-    },
-  });
+  const { t } = useTranslation();
+  const {
+    formikRef,
+    update,
+    setUpdate,
+    showPassword,
+    setShowPassword,
+    showConfirmPassword,
+    setShowConfirmPassword,
+    confirmEditVisible,
+    setConfirmEditVisible,
+    theme,
+    isPending,
+    error,
+    data,
+    reset,
+    handleSubmit,
+  } = useFormEditUser(user);
 
   return (
     <Formik
       innerRef={formikRef}
-      initialValues={user as UserType}
-      onSubmit={(values: UserType) => mutate(values)}
-      validationSchema={UserSchema}
+      initialValues={{ ...user, password: "", confirmPassword: "" } as UserType}
+      onSubmit={handleSubmit}
+      validationSchema={UserEditSchema}
     >
       {({
         handleChange,
         handleBlur,
-        handleSubmit,
         values,
         errors,
         touched,
         resetForm,
+        setFieldValue,
       }) => (
         <View style={styles.container}>
           <Card
@@ -78,7 +63,7 @@ export default function FormEditUser({ user }: FormProps) {
             elevation={1}
           >
             <Card.Title
-              title="Informações do Perfil"
+              title={t("user.profileInfo")}
               titleVariant="titleLarge"
               titleStyle={{ color: theme.colors.onSurface, fontWeight: "700" }}
               left={(props) => (
@@ -97,12 +82,12 @@ export default function FormEditUser({ user }: FormProps) {
                   variant="labelLarge"
                   style={[styles.label, { color: theme.colors.onSurface }]}
                 >
-                  Nome
+                  {t("user.name")}
                 </Text>
                 <TextInput
                   onChangeText={handleChange("name")}
                   onBlur={handleBlur("name")}
-                  placeholder="Digite seu nome"
+                  placeholder={t("user.namePlaceholder")}
                   value={values.name}
                   mode="outlined"
                   disabled={!update}
@@ -110,14 +95,14 @@ export default function FormEditUser({ user }: FormProps) {
                     <TextInput.Icon
                       icon="account"
                       forceTextInputFocus={false}
+                      color={theme.colors.onBackground}
                     />
                   }
-                  error={!!(errors.name && touched.name)}
-                  textColor={theme.colors.background}
                   style={{
-                    backgroundColor: theme.colors.onBackground,
-                    color: theme.colors.background,
+                    backgroundColor: theme.colors.background,
                   }}
+                  textColor={theme.colors.onBackground}
+                  error={!!(errors.name && touched.name)}
                 />
                 {errors.name && touched.name && (
                   <Text
@@ -135,26 +120,29 @@ export default function FormEditUser({ user }: FormProps) {
                   variant="labelLarge"
                   style={[styles.label, { color: theme.colors.onSurface }]}
                 >
-                  Email
+                  {t("user.email")}
                 </Text>
                 <TextInput
                   onChangeText={handleChange("email")}
                   onBlur={handleBlur("email")}
-                  placeholder="Digite seu email"
+                  placeholder={t("user.emailPlaceholder")}
                   value={values.email}
                   mode="outlined"
                   disabled={!update}
                   left={
-                    <TextInput.Icon icon="email" forceTextInputFocus={false} />
+                    <TextInput.Icon
+                      icon="email"
+                      forceTextInputFocus={false}
+                      color={theme.colors.onBackground}
+                    />
                   }
+                  style={{
+                    backgroundColor: theme.colors.background,
+                  }}
+                  textColor={theme.colors.onBackground}
                   error={!!(errors.email && touched.email)}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  textColor={theme.colors.background}
-                  style={{
-                    backgroundColor: theme.colors.onBackground,
-                    color: theme.colors.background,
-                  }}
                 />
                 {errors.email && touched.email && (
                   <Text
@@ -174,29 +162,34 @@ export default function FormEditUser({ user }: FormProps) {
                       variant="labelLarge"
                       style={[styles.label, { color: theme.colors.onSurface }]}
                     >
-                      Nova Senha
+                      {t("user.newPassword")}
                     </Text>
                     <TextInput
                       onChangeText={handleChange("password")}
                       onBlur={handleBlur("password")}
-                      placeholder="Digite sua nova senha"
+                      placeholder={t("user.newPasswordPlaceholder")}
                       value={values.password}
                       mode="outlined"
                       disabled={!update}
                       secureTextEntry={!showPassword}
-                      left={<TextInput.Icon icon="lock" />}
+                      left={
+                        <TextInput.Icon
+                          icon="lock"
+                          color={theme.colors.onBackground}
+                        />
+                      }
                       right={
                         <TextInput.Icon
                           icon={showPassword ? "eye-off" : "eye"}
                           onPress={() => setShowPassword(!showPassword)}
+                          color={theme.colors.onBackground}
                         />
                       }
-                      error={!!(errors.password && touched.password)}
-                      textColor={theme.colors.background}
                       style={{
-                        backgroundColor: theme.colors.onBackground,
-                        color: theme.colors.background,
+                        backgroundColor: theme.colors.background,
                       }}
+                      textColor={theme.colors.onBackground}
+                      error={!!(errors.password && touched.password)}
                     />
                     {errors.password && touched.password && (
                       <Text
@@ -217,33 +210,38 @@ export default function FormEditUser({ user }: FormProps) {
                       variant="labelLarge"
                       style={[styles.label, { color: theme.colors.onSurface }]}
                     >
-                      Confirmar Senha
+                      {t("user.confirmPassword")}
                     </Text>
                     <TextInput
                       onChangeText={handleChange("confirmPassword")}
                       onBlur={handleBlur("confirmPassword")}
-                      placeholder="Confirme sua senha"
+                      placeholder={t("user.confirmPasswordPlaceholder")}
                       value={values.confirmPassword}
                       mode="outlined"
                       disabled={!update}
                       secureTextEntry={!showConfirmPassword}
-                      left={<TextInput.Icon icon="lock-check" />}
+                      left={
+                        <TextInput.Icon
+                          icon="lock-check"
+                          color={theme.colors.onBackground}
+                        />
+                      }
                       right={
                         <TextInput.Icon
                           icon={showConfirmPassword ? "eye-off" : "eye"}
                           onPress={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
+                          color={theme.colors.onBackground}
                         />
                       }
+                      style={{
+                        backgroundColor: theme.colors.background,
+                      }}
+                      textColor={theme.colors.onBackground}
                       error={
                         !!(errors.confirmPassword && touched.confirmPassword)
                       }
-                      textColor={theme.colors.background}
-                      style={{
-                        backgroundColor: theme.colors.onBackground,
-                        color: theme.colors.background,
-                      }}
                     />
                     {errors.confirmPassword && touched.confirmPassword && (
                       <Text
@@ -266,17 +264,15 @@ export default function FormEditUser({ user }: FormProps) {
                   <>
                     <Button
                       mode="contained"
-                      onPress={() => handleSubmit()}
-                      style={[
-                        styles.button,
-                        // { backgroundColor: theme.colors.primary, flex: 1 },
-                      ]}
+                      onPress={() => handleSubmit(values)}
+                      style={styles.button}
                       labelStyle={styles.buttonLabel}
                       contentStyle={styles.buttonContent}
                       icon="check"
+                      loading={isPending}
                       disabled={isPending}
                     >
-                      Salvar
+                      {t("user.save")}
                     </Button>
                     <Button
                       mode="outlined"
@@ -291,7 +287,7 @@ export default function FormEditUser({ user }: FormProps) {
                       icon="close"
                       disabled={isPending}
                     >
-                      Cancelar
+                      {t("user.cancel")}
                     </Button>
                   </>
                 ) : (
@@ -305,7 +301,7 @@ export default function FormEditUser({ user }: FormProps) {
                     contentStyle={styles.buttonContent}
                     icon="pencil"
                   >
-                    Editar Perfil
+                    {t("user.editProfile")}
                   </Button>
                 )}
               </View>
@@ -314,9 +310,9 @@ export default function FormEditUser({ user }: FormProps) {
                 confirmEditVisible={confirmEditVisible}
                 setConfirmEditVisible={setConfirmEditVisible}
                 setUpdate={setUpdate}
+                setFieldValue={setFieldValue}
               />
 
-              {/* Loading */}
               {isPending && (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator
@@ -327,14 +323,13 @@ export default function FormEditUser({ user }: FormProps) {
                     variant="bodyMedium"
                     style={{ color: theme.colors.onSurface, marginTop: 8 }}
                   >
-                    Atualizando perfil...
+                    {t("user.updating")}
                   </Text>
                 </View>
               )}
             </Card.Content>
           </Card>
 
-          {/* Mensagem de Sucesso */}
           {data && (
             <Banner
               visible={!!data}
@@ -356,13 +351,12 @@ export default function FormEditUser({ user }: FormProps) {
             </Banner>
           )}
 
-          {/* Mensagem de Erro */}
           {error && (
             <Banner
               visible={!!error}
               actions={[
                 {
-                  label: "Fechar",
+                  label: t("user.cancel"),
                   onPress: () => reset(),
                 },
               ]}

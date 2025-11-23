@@ -1,8 +1,9 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
+import { useTranslation } from "react-i18next";
 import CustomNavigationBar from "../components/Appbar";
 import { usePreferences } from "../context/ThemeProvider";
+import LoginScreen from "../screens/Login/LoginScreen";
+import RegisterScreen from "../screens/Register/RegisterScreen";
 
 export type AuthParamList = {
   Register: undefined;
@@ -11,6 +12,7 @@ export type AuthParamList = {
 
 export const AuthNavigator = () => {
   const { theme } = usePreferences();
+  const { t } = useTranslation();
   const Stack = createNativeStackNavigator<AuthParamList>();
 
   return (
@@ -32,8 +34,16 @@ export const AuthNavigator = () => {
         },
       }}
     >
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ title: t("navigation.login") }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
+        options={{ title: t("navigation.register") }}
+      />
     </Stack.Navigator>
   );
 };

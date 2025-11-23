@@ -1,6 +1,12 @@
-import { useEffect, useRef } from "react";
-import { Formik, FormikProps } from "formik";
-import { Button, Text, TextInput, Card, HelperText, ActivityIndicator } from "react-native-paper";
+import { Formik } from "formik";
+import {
+  Button,
+  Text,
+  TextInput,
+  Card,
+  HelperText,
+  ActivityIndicator,
+} from "react-native-paper";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,58 +14,27 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { usePreferences } from "../context/ThemeProvider";
-import { useMutation } from "@tanstack/react-query";
-import api from "../services/api";
-import { AxiosError, AxiosResponse } from "axios";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { endpoints } from "../services/api/endpoints";
-import { AuthResponse } from "../model/auth/types";
 import {
-  emptyLoginForm,
-  LoginSchema,
   LoginType,
-} from "../model/auth/LoginTypes";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { AuthParamList } from "../navigators/AuthNavigator";
-import { ErrorResponseDTO } from "../model/types";
-import { useAuth } from "../context/AuthProvider";
+  getLoginSchema,
+  emptyLoginForm,
+} from "../../model/auth/LoginTypes";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLogin } from "./controllers/LoginController";
+import { useTranslation } from "react-i18next";
 
 const LoginScreen = () => {
-  const { theme } = usePreferences();
-  const formikRef = useRef<FormikProps<LoginType> | null>(null);
-  const emailInputRef = useRef<any | null>(null);
-  const { login } = useAuth();
-
-  const navigation = useNavigation<NavigationProp<AuthParamList>>();
-
-  let { isPending, error, data, mutate } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ErrorResponseDTO>,
-    LoginType
-  >({
-    mutationKey: ["login"],
-    mutationFn: async (form: LoginType) =>
-      await api.post(endpoints.auth.login, form, {
-        headers: { "x-skip-auth": true },
-      }),
-    onSuccess: (response) => {
-      login(response.data.token);
-    },
-  });
-
-  useEffect(() => {
-    if (!data) return;
-
-    const timeout = setTimeout(() => {
-      formikRef.current?.resetForm();
-      data = undefined;
-      emailInputRef.current?.focus?.();
-      formikRef.current?.setFieldTouched("password", false);
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-  }, [data]);
+  const { t } = useTranslation();
+  const {
+    formikRef,
+    emailInputRef,
+    theme,
+    isPending,
+    error,
+    data,
+    handleSubmit,
+    navigateToRegister,
+  } = useLogin();
 
   return (
     <SafeAreaView
@@ -76,8 +51,8 @@ const LoginScreen = () => {
           <Formik
             innerRef={formikRef}
             initialValues={emptyLoginForm}
-            onSubmit={(values: LoginType) => mutate(values)}
-            validationSchema={LoginSchema}
+            onSubmit={handleSubmit}
+            validationSchema={getLoginSchema(t)}
           >
             {({
               handleChange,
@@ -92,7 +67,7 @@ const LoginScreen = () => {
                   variant="headlineLarge"
                   style={[styles.title, { color: theme.colors.primary }]}
                 >
-                  Bem-vindo de volta!
+                  {t("login.title")}
                 </Text>
 
                 <Text
@@ -102,7 +77,7 @@ const LoginScreen = () => {
                     { color: theme.colors.onSurfaceVariant },
                   ]}
                 >
-                  Entre com suas credenciais para acessar
+                  {t("login.subtitle")}
                 </Text>
 
                 <Card
@@ -114,10 +89,10 @@ const LoginScreen = () => {
                 >
                   <Card.Content>
                     <TextInput
-                      label="Email"
+                      label={t("login.email")}
                       onChangeText={handleChange("email")}
                       onBlur={handleBlur("email")}
-                      placeholder="seu@email.com"
+                      placeholder={t("login.emailPlaceholder")}
                       value={values.email}
                       mode="outlined"
                       ref={emailInputRef}
@@ -135,10 +110,10 @@ const LoginScreen = () => {
                     </HelperText>
 
                     <TextInput
-                      label="Senha"
+                      label={t("login.password")}
                       onChangeText={handleChange("password")}
                       onBlur={handleBlur("password")}
-                      placeholder="Digite sua senha"
+                      placeholder={t("login.passwordPlaceholder")}
                       value={values.password}
                       mode="outlined"
                       error={!!(errors.password && touched.password)}
@@ -165,20 +140,23 @@ const LoginScreen = () => {
                   loading={isPending && !error}
                   disabled={isPending && !error}
                 >
-                  Entrar
+                  {t("login.loginButton")}
                 </Button>
 
                 {isPending && !error && (
-                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.primary}
+                  />
                 )}
 
                 <Button
                   mode="text"
-                  onPress={() => navigation.navigate("Register")}
+                  onPress={navigateToRegister}
                   style={styles.linkButton}
                   labelStyle={{ color: theme.colors.primary }}
                 >
-                  Sem conta? Cadastre-se
+                  {t("login.noAccount")}
                 </Button>
 
                 {error && (
@@ -190,7 +168,9 @@ const LoginScreen = () => {
                   >
                     <Card.Content>
                       <Text style={{ color: theme.colors.onErrorContainer }}>
-                        {error.status === 404 ? "Email ou senha inválidas" : error.message}
+                        {error.status === 404
+                          ? t("login.invalidCredentials")
+                          : error.message}
                       </Text>
                     </Card.Content>
                   </Card>

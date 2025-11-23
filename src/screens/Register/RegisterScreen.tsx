@@ -1,5 +1,4 @@
-import { useEffect, useRef } from "react";
-import { Formik, FormikProps } from "formik";
+import { Formik } from "formik";
 import {
   ActivityIndicator,
   Button,
@@ -15,58 +14,27 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { usePreferences } from "../context/ThemeProvider";
-import { useMutation } from "@tanstack/react-query";
-import api from "../services/api";
-import { AxiosError, AxiosResponse } from "axios";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { endpoints } from "../services/api/endpoints";
-import { AuthResponse } from "../model/auth/types";
 import {
-  emptyRegisterForm,
-  RegisterSchema,
   RegisterType,
-} from "../model/auth/RegisterTypes";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { AuthParamList } from "../navigators/AuthNavigator";
-import { ErrorResponseDTO } from "../model/types";
-import { useAuth } from "../context/AuthProvider";
+  emptyRegisterForm,
+  getRegisterSchema,
+} from "../../model/auth/RegisterTypes";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRegister } from "./controllers/RegisterController";
+import { useTranslation } from "react-i18next";
 
 const RegisterScreen = () => {
-  const { theme } = usePreferences();
-  const formikRef = useRef<FormikProps<RegisterType> | null>(null);
-  const emailInputRef = useRef<any | null>(null);
-  const { login } = useAuth();
-
-  const navigation = useNavigation<NavigationProp<AuthParamList>>();
-
-  let { isPending, error, data, mutate } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ErrorResponseDTO>,
-    Omit<RegisterType, "confirmPassword">
-  >({
-    mutationKey: ["register"],
-    mutationFn: async (form) =>
-      await api.post(endpoints.auth.register, form, {
-        headers: { "x-skip-auth": true },
-      }),
-    onSuccess: (response) => {
-      login(response.data.token);
-    },
-  });
-
-  useEffect(() => {
-    if (!data) return;
-
-    const timeout = setTimeout(() => {
-      formikRef.current?.resetForm();
-      data = undefined;
-      emailInputRef.current?.focus?.();
-      formikRef.current?.setFieldTouched("confirmPassword", false);
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-  }, [data]);
+  const { t } = useTranslation();
+  const {
+    formikRef,
+    emailInputRef,
+    theme,
+    isPending,
+    error,
+    data,
+    handleSubmit,
+    navigateToLogin,
+  } = useRegister();
 
   return (
     <SafeAreaView
@@ -83,11 +51,8 @@ const RegisterScreen = () => {
           <Formik
             innerRef={formikRef}
             initialValues={emptyRegisterForm}
-            onSubmit={(values: RegisterType) => {
-              const { confirmPassword, ...request } = values;
-              mutate(request);
-            }}
-            validationSchema={RegisterSchema}
+            onSubmit={handleSubmit}
+            validationSchema={getRegisterSchema(t)}
           >
             {({
               handleChange,
@@ -102,7 +67,7 @@ const RegisterScreen = () => {
                   variant="headlineMedium"
                   style={[styles.title, { color: theme.colors.primary }]}
                 >
-                  Criar Conta
+                  {t("register.title")}
                 </Text>
 
                 <Text
@@ -112,7 +77,7 @@ const RegisterScreen = () => {
                     { color: theme.colors.onSurfaceVariant },
                   ]}
                 >
-                  Preencha os dados para se cadastrar
+                  {t("register.subtitle")}
                 </Text>
 
                 <Card
@@ -124,10 +89,10 @@ const RegisterScreen = () => {
                 >
                   <Card.Content>
                     <TextInput
-                      label="Nome"
+                      label={t("register.name")}
                       onChangeText={handleChange("name")}
                       onBlur={handleBlur("name")}
-                      placeholder="Digite seu nome completo"
+                      placeholder={t("register.namePlaceholder")}
                       value={values.name}
                       mode="outlined"
                       error={!!(errors.name && touched.name)}
@@ -142,10 +107,10 @@ const RegisterScreen = () => {
                     </HelperText>
 
                     <TextInput
-                      label="Email"
+                      label={t("register.email")}
                       onChangeText={handleChange("email")}
                       onBlur={handleBlur("email")}
-                      placeholder="seu@email.com"
+                      placeholder={t("register.emailPlaceholder")}
                       value={values.email}
                       mode="outlined"
                       ref={emailInputRef}
@@ -163,10 +128,10 @@ const RegisterScreen = () => {
                     </HelperText>
 
                     <TextInput
-                      label="Senha"
+                      label={t("register.password")}
                       onChangeText={handleChange("password")}
                       onBlur={handleBlur("password")}
-                      placeholder="Crie uma senha segura"
+                      placeholder={t("register.passwordPlaceholder")}
                       value={values.password}
                       mode="outlined"
                       error={!!(errors.password && touched.password)}
@@ -182,10 +147,10 @@ const RegisterScreen = () => {
                     </HelperText>
 
                     <TextInput
-                      label="Confirmar Senha"
+                      label={t("register.confirmPassword")}
                       onChangeText={handleChange("confirmPassword")}
                       onBlur={handleBlur("confirmPassword")}
-                      placeholder="Confirme sua senha"
+                      placeholder={t("register.confirmPasswordPlaceholder")}
                       value={values.confirmPassword}
                       mode="outlined"
                       error={
@@ -216,16 +181,16 @@ const RegisterScreen = () => {
                   loading={isPending}
                   disabled={isPending}
                 >
-                  Criar Conta
+                  {t("register.createButton")}
                 </Button>
 
                 <Button
                   mode="text"
-                  onPress={() => navigation.navigate("Login")}
+                  onPress={navigateToLogin}
                   style={styles.linkButton}
                   labelStyle={{ color: theme.colors.primary }}
                 >
-                  Já tem uma conta? Faça login
+                  {t("register.hasAccount")}
                 </Button>
 
                 {error && (

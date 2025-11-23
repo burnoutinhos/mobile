@@ -9,9 +9,9 @@ export interface ITodo {
   end: Date
   description: string
   type: EnumTypeTodo
-  user_id: IUser
-  suggestion: ISuggestion
-  isCompleted: number
+  userId: IUser
+  suggestions: ISuggestion[]
+  isCompleted: boolean
   createdAt: Date
   updatedAt: Date
 }
