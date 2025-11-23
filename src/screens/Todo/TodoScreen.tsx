@@ -1,59 +1,28 @@
-import { useQuery } from "@tanstack/react-query";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { FAB } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { queryKeys } from "../../services/api/query-keys";
-import { endpoints } from "../../services/api/endpoints";
-import api from "../../services/api";
-import { ITodo } from "../../model/todo/todo";
-import { useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
-import { Badge, Card, FAB, IconButton, Text } from "react-native-paper";
 import { usePreferences } from "../../context/ThemeProvider";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { AppParamList } from "../../navigators/AppNavigator";
-import { PageableResponse } from "../../model/types";
-import Pagination from "@cherry-soft/react-native-basic-pagination";
 import { SingleTodoItem } from "./components/SingleTodoItem";
-import { TodosNotFound } from "./components/TodosNotFound";
 import { TodoFooter } from "./components/TodoFooter";
 import { TodoHeader } from "./components/TodoHeader";
+import { TodosNotFound } from "./components/TodosNotFound";
+import { useTodo } from "./controllers/TodoController";
 
 const TodoScreen = () => {
   const { theme } = usePreferences();
-  const navigation = useNavigation<NavigationProp<AppParamList>>();
-
-  const [page, setPage] = useState(0);
-  const [fabOpen, setFabOpen] = useState<boolean>(false);
-
-  const pageSize = 10;
-
-  const navTo = (data: ITodo) => {
-    navigation.navigate("TodoPage", { todo: data });
-  };
 
   const {
-    data: pagedTodos,
+    page,
+    setPage,
+    fabOpen,
+    setFabOpen,
+    pagedTodos,
+    navigation,
     isLoading,
-    refetch,
     isFetching,
-  } = useQuery({
-    queryKey: [queryKeys.todo.findAll, page],
-    queryFn: async () => {
-      const res = await api.get<PageableResponse<ITodo>>(
-        `${endpoints.todo.me}?page=${page}&size=${pageSize}`,
-      );
-      return res.data;
-    },
-  });
-
-  const addTodo = async () => {
-    console.log("Adding todo");
-  };
+    refetch,
+    handleCreateTodo,
+  } = useTodo();
 
   return (
     <SafeAreaView
@@ -99,7 +68,7 @@ const TodoScreen = () => {
         actions={[
           {
             icon: "plus",
-            onPress: () => navigation.navigate("FormEditOrCreateTodo"),
+            onPress: handleCreateTodo,
             label: "Adicione uma tarefa",
           },
         ]}

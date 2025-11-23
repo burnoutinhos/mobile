@@ -18,5 +18,12 @@ export const queryKeys = {
     put: "todoUpdate",
     create: "todoCreate",
     delete: "todoDelete",
-  }
+  },
+  timeblock: {
+    findAll: "timeblocks",
+    single: "timeblock",
+    create: "timeblockCreate",
+    update: "timeblockUpdate",
+    delete: "timeblockDelete",
+  },
 };

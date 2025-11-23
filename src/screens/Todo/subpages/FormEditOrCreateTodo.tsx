@@ -1,16 +1,11 @@
-import { Formik, FormikProps } from "formik";
+import { Formik } from "formik";
 import {
   emptyTodoForm,
   TodoSchema,
   TodoType,
 } from "../../../model/todo/TodoTypes";
 import { usePreferences } from "../../../context/ThemeProvider";
-import { useRef, useState } from "react";
 import { ITodo } from "../../../model/todo/todo";
-import { AxiosError, AxiosResponse } from "axios";
-import { useMutation } from "@tanstack/react-query";
-import { endpoints } from "../../../services/api/endpoints";
-import api from "../../../services/api";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -32,83 +27,32 @@ import {
   TextInput,
 } from "react-native-paper";
 import DatePicker from "@dietime/react-native-date-picker";
-import { EnumTypeTodo } from "../../../services/Enums";
-import { ErrorResponseDTO } from "../../../model/types";
-import { queryKeys } from "../../../services/api/query-keys";
 import { CustomModal } from "../../../components/Modal";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { AppParamList } from "../../../navigators/AppNavigator";
+import { useFormEditOrCreateTodo } from "../controllers/FormEditOrCreateTodoController";
 
 const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
   const { theme } = usePreferences();
-  const formikRef = useRef<FormikProps<TodoType> | null>(null);
-  const navigation = useNavigation<NavigationProp<AppParamList>>();
-
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-
-  const handleDelete = () => {
-    setDeleteModalVisible(true);
-  };
-
-  const typeOptions = [
-    {
-      label: "Tarefa",
-      value: EnumTypeTodo.TODO,
-      icon: "checkbox-marked-circle",
-    },
-    { label: "Modo Foco", value: EnumTypeTodo.FOCUS_MODE, icon: "brain" },
-    { label: "Descanso", value: EnumTypeTodo.REST, icon: "coffee" },
-  ];
 
   const {
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    data: dataUpdate,
-    mutate: mutateUpdate,
-    reset: resetUpdate,
-  } = useMutation<
-    AxiosResponse<ITodo>,
-    ErrorResponseDTO,
-    { todoId: number; todoType: TodoType }
-  >({
-    mutationKey: [queryKeys.todo.put],
-    mutationFn: async ({ todoId, todoType }) =>
-      await api.put(endpoints.todo.put + `/${todoId}`, todoType),
-  });
-
-  const {
-    isPending: isPendingCreate,
-    error: errorCreate,
-    data: dataCreate,
-    mutate: mutateCreate,
-    reset: resetCreate,
-  } = useMutation<AxiosResponse<ITodo>, ErrorResponseDTO, TodoType>({
-    mutationKey: [queryKeys.todo.create],
-    mutationFn: async (form: TodoType) =>
-      await api.post(endpoints.todo.post, form),
-  });
-
-  const {
-    isPending: isPendingDelete,
-    error: errorDelete,
-    data: dataDelete,
-    mutate: mutateDelete,
-    reset: resetDelete,
-  } = useMutation<AxiosResponse, AxiosError, number>({
-    mutationKey: [queryKeys.todo.delete],
-    mutationFn: async (todoId: number) =>
-      await api.delete(endpoints.todo.delete + `/${todoId}`),
-      onSuccess: () => {
-        navigation.goBack();
-      },
-  });
-
-  const isPending = isPendingUpdate || isPendingCreate || isPendingDelete;
-  const error = errorUpdate || errorCreate || errorDelete;
-  const data = dataUpdate || dataCreate || dataDelete;
+    formikRef,
+    showStartPicker,
+    setShowStartPicker,
+    showEndPicker,
+    setShowEndPicker,
+    menuVisible,
+    setMenuVisible,
+    deleteModalVisible,
+    setDeleteModalVisible,
+    typeOptions,
+    isPending,
+    error,
+    data,
+    handleDelete,
+    handleConfirmDelete,
+    handleSubmit,
+    resetUpdate,
+    resetCreate,
+  } = useFormEditOrCreateTodo(todo);
 
   return (
     <SafeAreaView
@@ -125,14 +69,7 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
           <Formik
             innerRef={formikRef}
             initialValues={todo ? { ...todo } : emptyTodoForm}
-            onSubmit={(values: TodoType) => {
-              console.log(todo);
-              if (todo !== undefined) {
-                mutateUpdate({ todoId: todo.id, todoType: values });
-              } else {
-                mutateCreate(values);
-              }
-            }}
+            onSubmit={handleSubmit}
             validationSchema={TodoSchema}
           >
             {({
@@ -432,7 +369,7 @@ const FormEditOrCreateTodo = ({ todo }: { todo?: ITodo }) => {
                 actions={[
                   {
                     label: "Apagar",
-                    onPress: () => mutateDelete(todo.id),
+                    onPress: handleConfirmDelete,
                     icon: "delete-alert",
                   },
                 ]}

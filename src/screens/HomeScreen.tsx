@@ -14,53 +14,74 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: theme.colors.background },
-      ]}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text variant="headlineMedium" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
+          <Text
+            variant="headlineMedium"
+            style={{ color: theme.colors.primary, fontWeight: "bold" }}
+          >
             Bem-vindo!
           </Text>
-          <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
+          <Text
+            variant="bodyLarge"
+            style={{ color: theme.colors.onSurfaceVariant }}
+          >
             O que você gostaria de fazer hoje?
           </Text>
         </View>
 
         <View style={styles.grid}>
           <Card
-            style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]}
-            onPress={() => navigation.navigate("Cronometer")}
+            style={[
+              styles.card,
+              { backgroundColor: theme.colors.surfaceVariant },
+            ]}
+            onPress={() => navigation.navigate("Timeblocks")}
             mode="elevated"
           >
             <Card.Content style={styles.cardContent}>
-              <Avatar.Icon 
-                size={56} 
-                icon="timer-outline" 
-                style={{ backgroundColor: theme.colors.primaryContainer }} 
-                color={theme.colors.onPrimaryContainer} 
+              <Avatar.Icon
+                size={56}
+                icon="timer-outline"
+                style={{ backgroundColor: theme.colors.primaryContainer }}
+                color={theme.colors.onPrimaryContainer}
               />
-              <Text variant="titleMedium" style={[styles.cardTitle, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                variant="titleMedium"
+                style={[
+                  styles.cardTitle,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 Cronômetro
               </Text>
             </Card.Content>
           </Card>
 
           <Card
-            style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]}
+            style={[
+              styles.card,
+              { backgroundColor: theme.colors.surfaceVariant },
+            ]}
             onPress={() => navigation.navigate("Todo")}
             mode="elevated"
           >
             <Card.Content style={styles.cardContent}>
-              <Avatar.Icon 
-                size={56} 
-                icon="format-list-checks" 
-                style={{ backgroundColor: theme.colors.secondaryContainer }} 
-                color={theme.colors.onSecondaryContainer} 
+              <Avatar.Icon
+                size={56}
+                icon="format-list-checks"
+                style={{ backgroundColor: theme.colors.secondaryContainer }}
+                color={theme.colors.onSecondaryContainer}
               />
-              <Text variant="titleMedium" style={[styles.cardTitle, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                variant="titleMedium"
+                style={[
+                  styles.cardTitle,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
                 Tarefas
               </Text>
             </Card.Content>
@@ -96,33 +117,33 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 16,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   card: {
-    width: '47%',
+    width: "47%",
     marginBottom: 16,
   },
   cardContent: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 24,
     gap: 16,
   },
   cardTitle: {
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   footer: {
-    marginTop: 'auto',
+    marginTop: "auto",
     paddingTop: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logoutButton: {
-    borderColor: 'transparent',
-    width: '100%',
-  }
+    borderColor: "transparent",
+    width: "100%",
+  },
 });
 
 export default HomeScreen;

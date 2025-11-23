@@ -17,81 +17,29 @@ import {
   IconButton,
   Switch,
 } from "react-native-paper";
-import { useQuery } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
-import { useState } from "react";
 import { CustomModal } from "../../components/Modal";
-import { useAuth } from "../../context/AuthProvider";
-import { usePreferences } from "../../context/ThemeProvider";
-import { IUser } from "../../model/user/user";
-import api from "../../services/api";
-import { endpoints } from "../../services/api/endpoints";
-import { queryKeys } from "../../services/api/query-keys";
 import FormEditUser from "./subpages/FormEditUser";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTranslation } from "react-i18next";
+import { useUser } from "./controllers/UserController";
 
 const UserScreen = () => {
-  const { t, i18n } = useTranslation();
-    const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
-
-    const changeLanguage = async (lang: string) => {
-      await i18n.changeLanguage(lang);
-      await AsyncStorage.setItem("language", lang);
-
-      // await new ProfileService(authToken).saveLanguagePreference(
-      //   translateToExpectedSpringEnums(lang),
-      // );
-      setCurrentLanguage(lang);
-    };
-
-    const languages = [
-      { code: "pt-BR", name: "Português", flag: "🇧🇷" },
-      { code: "en", name: "English", flag: "🇺🇸" },
-      { code: "es", name: "Español", flag: "🇪🇸" },
-    ];
-
-    const translateToExpectedSpringEnums = (lang: string) => {
-      lang = lang.toUpperCase();
-
-      switch (lang) {
-        case "PT-BR":
-          return "PTBR";
-        case "EN":
-          return lang;
-        case "ES":
-          return lang;
-        default:
-          return "PTBR";
-      }
-    };
-
-
-  const [visible, setVisible] = useState(false);
-
-  const { theme, toggleTheme } = usePreferences();
-  const { logout } = useAuth();
-
   const {
-    refetch,
+    visible,
+    setVisible,
+    currentLanguage,
+    theme,
+    toggleTheme,
+    user,
     isLoading,
     error,
-    data: user,
     isRefetching,
-  } = useQuery<AxiosResponse<IUser>, AxiosError>({
-    queryKey: [queryKeys.user.user],
-    queryFn: async () => {
-      return await api.get(endpoints.user.userInfo);
-    },
-  });
-
-  const handleLogout = () => {
-    setVisible(true);
-  };
-
-  const handleEditImage = () => {
-    console.log("Editar imagem");
-  };
+    refetch,
+    languages,
+    logout,
+    handleLogout,
+    handleEditImage,
+    changeLanguage,
+    getInitial,
+  } = useUser();
 
   if (isLoading) {
     return (
@@ -143,10 +91,7 @@ const UserScreen = () => {
 
   console.log(user);
 
-  const initial =
-    user.data?.name?.trim() && user.data.name.trim().length > 0
-      ? user.data.name.trim().charAt(0).toUpperCase()
-      : "?";
+  const initial = getInitial();
 
   console.log(user.data.profileImage);
 
@@ -258,95 +203,112 @@ const UserScreen = () => {
         </View>
 
         {/* Language Selector */}
-               <View style={[styles.actionsSection, { marginBottom: 16 }]}>
-                 <Text style={[styles.infoLabel, { marginBottom: 12, color: theme.colors.onSurfaceVariant }]}>
-                   {/*{t("language")}*/}
-                   Escolha sua língua
-                 </Text>
-                 <View
-                   style={{
-                     flexDirection: "row",
-                     justifyContent: "space-around",
-                     gap: 8,
-                   }}
-                 >
-                   {languages.map((lang) => (
-                     <TouchableOpacity
-                       key={lang.code}
-                       onPress={() => changeLanguage(lang.code)}
-                       style={{
-                         flex: 1,
-                         padding: 12,
-                         borderRadius: 8,
-                         backgroundColor:
-                           currentLanguage === lang.code
-                             ? theme.colors.primaryContainer
-                             : theme.colors.background,
-                         alignItems: "center",
-                         borderWidth: 2,
-                         borderColor:
-                           currentLanguage === lang.code ? theme.colors.primaryContainer : "transparent",
-                       }}
-                     >
-                       <Text style={{ fontSize: 24, marginBottom: 4}}>
-                         {lang.flag}
-                       </Text>
-                       <Text
-                         style={{
-                           color:
-                             currentLanguage === lang.code
-                               ? theme.colors.onPrimaryContainer
-                               : theme.colors.text,
-                           fontSize: 12,
-                           fontWeight:
-                             currentLanguage === lang.code ? "bold" : "normal",
-                         }}
-                       >
-                         {lang.name}
-                       </Text>
-                     </TouchableOpacity>
-                   ))}
-                 </View>
-               </View>
+        <View style={[styles.actionsSection, { marginBottom: 16 }]}>
+          <Text
+            style={[
+              styles.infoLabel,
+              { marginBottom: 12, color: theme.colors.onSurfaceVariant },
+            ]}
+          >
+            {/*{t("language")}*/}
+            Escolha sua língua
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-around",
+              gap: 8,
+            }}
+          >
+            {languages.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                onPress={() => changeLanguage(lang.code)}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor:
+                    currentLanguage === lang.code
+                      ? theme.colors.primaryContainer
+                      : theme.colors.background,
+                  alignItems: "center",
+                  borderWidth: 2,
+                  borderColor:
+                    currentLanguage === lang.code
+                      ? theme.colors.primaryContainer
+                      : "transparent",
+                }}
+              >
+                <Text style={{ fontSize: 24, marginBottom: 4 }}>
+                  {lang.flag}
+                </Text>
+                <Text
+                  style={{
+                    color:
+                      currentLanguage === lang.code
+                        ? theme.colors.onPrimaryContainer
+                        : theme.colors.text,
+                    fontSize: 12,
+                    fontWeight:
+                      currentLanguage === lang.code ? "bold" : "normal",
+                  }}
+                >
+                  {lang.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
-               {/* Theme toggle */}
-               <View style={[styles.actionsSection, { marginBottom: 16 }]}>
-                 <View
-                   style={{
-                     flexDirection: "row",
-                     justifyContent: "space-between",
-                     alignItems: "center",
-                   }}
-                 >
-                   <View>
-                     <Text style={[styles.infoValue, { fontSize: 14, color: theme.colors.onSurfaceVariant }]}>
-                       {/*{theme.dark
+        {/* Theme toggle */}
+        <View style={[styles.actionsSection, { marginBottom: 16 }]}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <View>
+              <Text
+                style={[
+                  styles.infoValue,
+                  { fontSize: 14, color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {/*{theme.dark
                          ? t("settings.themeDark")
                          : t("settings.themeLight")}*/}
-                       Tema escuro
-                     </Text>
-                   </View>
-                   <Switch
-                     value={theme.dark}
-                     onValueChange={toggleTheme}
-                     trackColor={{ false: theme.colors.onSurfaceDisabled, true: theme.colors.primary }}
-                     thumbColor={theme.colors.inversePrimary}
-                   />
-                 </View>
-               </View>
+                Tema escuro
+              </Text>
+            </View>
+            <Switch
+              value={theme.dark}
+              onValueChange={toggleTheme}
+              trackColor={{
+                false: theme.colors.onSurfaceDisabled,
+                true: theme.colors.primary,
+              }}
+              thumbColor={theme.colors.inversePrimary}
+            />
+          </View>
+        </View>
 
         <CustomModal
           title="Deseja fazer logout?"
           onDismiss={() => setVisible(false)}
           visible={visible}
-          actions={[{
-            label: 'Logout',
-            onPress: () => logout(),
-          },
-          {
-            label: 'Cancelar',
-            onPress: () => setVisible(false),
-          }]}
+          actions={[
+            {
+              label: "Logout",
+              onPress: () => logout(),
+            },
+            {
+              label: "Cancelar",
+              onPress: () => setVisible(false),
+            },
+          ]}
         />
       </ScrollView>
     </SafeAreaView>

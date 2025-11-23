@@ -14,8 +14,17 @@ export const endpoints = {
   todo: {
     findAll: "/todos",
     put: "/todos",
-    me: "/todos/me",
+    me: (page: number, pageSize: number) =>
+      `/todos/me?page=${page}&size=${pageSize}`,
     post: "/todos",
     delete: "/todos",
+  },
+  timeblock: {
+    find: "/timeblocks",
+    findMe: (page: number, size: number) =>
+      `/timeblocks/me?page=${page}&size=${size}`,
+    create: "/timeblocks",
+    update: (id: number) => `/timeblocks/${id}`,
+    delete: (id: number) => `/timeblocks/${id}`,
   },
 } as const;

@@ -1,7 +1,5 @@
-import { Formik, FormikProps } from "formik";
-import React, { useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import { Formik } from "formik";
+import React from "react";
 import { StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -14,79 +12,48 @@ import {
   Banner,
 } from "react-native-paper";
 import ConfirmPasswordToEdit from "../components/ConfirmPasswordToEdit";
-import { useAuth } from "../../../context/AuthProvider";
-import { usePreferences } from "../../../context/ThemeProvider";
-import { AuthResponse } from "../../../model/auth/types";
-import { ErrorResponseDTO } from "../../../model/types";
 import { IUser } from "../../../model/user/user";
 import { UserType, UserEditSchema } from "../../../model/user/UserTypes";
-import api from "../../../services/api";
-import { endpoints } from "../../../services/api/endpoints";
-import { queryKeys } from "../../../services/api/query-keys";
+import { useFormEditUser } from "../controllers/FormEditUserController";
 
 interface FormProps {
   user: IUser;
 }
 
 export default function FormEditUser({ user }: FormProps) {
-  const { theme } = usePreferences();
-  const formikRef = useRef<FormikProps<UserType> | null>(null);
-  const [update, setUpdate] = useState<boolean>(false);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState<boolean>(false);
-
-  const [confirmEditVisible, setConfirmEditVisible] = useState<boolean>(false);
-
-  const { login } = useAuth();
-
-  let { isPending, error, data, mutate, reset } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ErrorResponseDTO>,
-    Omit<UserType, 'confirmPassword'>
-  >({
-    mutationKey: [queryKeys.user.user],
-    mutationFn: async (form: Omit<UserType, 'confirmPassword'>) =>
-      await api.put(endpoints.user.update, form),
-    onSuccess: (data) => {
-      login(data.data.token);
-      setUpdate(false);
-    },
-  });
+  const {
+    formikRef,
+    update,
+    setUpdate,
+    showPassword,
+    setShowPassword,
+    showConfirmPassword,
+    setShowConfirmPassword,
+    confirmEditVisible,
+    setConfirmEditVisible,
+    theme,
+    isPending,
+    error,
+    data,
+    reset,
+    handleSubmit,
+  } = useFormEditUser(user);
 
   return (
     <Formik
       innerRef={formikRef}
-      initialValues={{...user, password: '', confirmPassword: ''} as UserType}
-      onSubmit={(values: UserType) => {
-        console.log("🔍 FormEditUser - onSubmit chamado");
-        console.log("🔍 Valores:", values);
-
-        // Cria o payload apenas com os campos que queremos editar
-        const payload: any = {
-          name: values.name,
-          email: values.email,
-        };
-
-        // Adiciona password apenas se foi preenchido
-        if (values.password && values.password.trim() !== '') {
-          payload.password = values.password;
-        }
-
-        console.log("📤 Payload final:", payload);
-        mutate(payload);
-      }}
+      initialValues={{ ...user, password: "", confirmPassword: "" } as UserType}
+      onSubmit={handleSubmit}
       validationSchema={UserEditSchema}
     >
       {({
         handleChange,
         handleBlur,
-        handleSubmit,
         values,
         errors,
         touched,
         resetForm,
-        setFieldValue
+        setFieldValue,
       }) => (
         <View style={styles.container}>
           <Card
@@ -161,7 +128,11 @@ export default function FormEditUser({ user }: FormProps) {
                   mode="outlined"
                   disabled={!update}
                   left={
-                    <TextInput.Icon icon="email" forceTextInputFocus={false} color={theme.colors.onBackground} />
+                    <TextInput.Icon
+                      icon="email"
+                      forceTextInputFocus={false}
+                      color={theme.colors.onBackground}
+                    />
                   }
                   style={{
                     backgroundColor: theme.colors.background,
@@ -199,7 +170,12 @@ export default function FormEditUser({ user }: FormProps) {
                       mode="outlined"
                       disabled={!update}
                       secureTextEntry={!showPassword}
-                      left={<TextInput.Icon icon="lock" color={theme.colors.onBackground}  />}
+                      left={
+                        <TextInput.Icon
+                          icon="lock"
+                          color={theme.colors.onBackground}
+                        />
+                      }
                       right={
                         <TextInput.Icon
                           icon={showPassword ? "eye-off" : "eye"}
@@ -242,7 +218,12 @@ export default function FormEditUser({ user }: FormProps) {
                       mode="outlined"
                       disabled={!update}
                       secureTextEntry={!showConfirmPassword}
-                      left={<TextInput.Icon icon="lock-check" color={theme.colors.onBackground} />}
+                      left={
+                        <TextInput.Icon
+                          icon="lock-check"
+                          color={theme.colors.onBackground}
+                        />
+                      }
                       right={
                         <TextInput.Icon
                           icon={showConfirmPassword ? "eye-off" : "eye"}
@@ -281,9 +262,7 @@ export default function FormEditUser({ user }: FormProps) {
                   <>
                     <Button
                       mode="contained"
-                      onPress={() => {
-                        handleSubmit();
-                      }}
+                      onPress={() => handleSubmit(values)}
                       style={styles.button}
                       labelStyle={styles.buttonLabel}
                       contentStyle={styles.buttonContent}

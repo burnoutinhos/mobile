@@ -1,31 +1,29 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { NavigationContainer } from "@react-navigation/native";
-import HomeScreen from "../screens/HomeScreen";
-import RegisterScreen from "../screens/RegisterScreen";
-import LoginScreen from "../screens/LoginScreen";
-import { usePreferences } from "../context/ThemeProvider";
+import React from "react";
 import CustomNavigationBar from "../components/Appbar";
-import NotificationsScreen from "../screens/NotificationsScreen";
-import UserScreen from "../screens/User/UserScreen";
-import { HomeNavigator } from "./HomeNavigator";
-import { CronometerScreen } from "../screens/Cronometer/Cronometer";
+import { usePreferences } from "../context/ThemeProvider";
+import { ITimeBlock } from "../model/timeblocks/Timeblock";
 import { ITodo } from "../model/todo/todo";
+import Timeblocks from "../screens/Cronometer/Timeblocks";
+import { CronometerScreen } from "../screens/Cronometer/subpages/Cronometer";
+import HomeScreen from "../screens/HomeScreen";
+import NotificationsScreen from "../screens/NotificationsScreen";
 import TodoScreen from "../screens/Todo/TodoScreen";
-import TodoPage from "../screens/Todo/subpages/TodoPage";
 import FormEditOrCreateTodo from "../screens/Todo/subpages/FormEditOrCreateTodo";
-
+import TodoPage from "../screens/Todo/subpages/TodoPage";
+import UserScreen from "../screens/User/UserScreen";
 
 export type AppParamList = {
   Home: undefined;
   Notifications: undefined;
-  Cronometer: undefined;
+  Cronometer: { timeblock: ITimeBlock } | undefined;
   SignIn: undefined;
   Login: undefined;
   User: undefined;
   Todo: undefined;
   TodoPage: { todo: ITodo };
   FormEditOrCreateTodo: { todo: ITodo } | undefined;
+  Timeblocks: undefined;
 };
 
 const Stack = createNativeStackNavigator<AppParamList>();
@@ -86,6 +84,11 @@ const AppNavigator = () => {
         name="FormEditOrCreateTodo"
         component={FormEditOrCreateTodo}
         options={{ title: "Criar tarefa" }}
+      />
+      <Stack.Screen
+        name="Timeblocks"
+        component={Timeblocks}
+        options={{ title: "Blocos de tempo" }}
       />
     </Stack.Navigator>
   );
